@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { Search, ShoppingBag } from "lucide-react";
+import { useCartStore } from "@/lib/cart-store";
+import { SearchDialog } from "@/components/sections/SearchDialog";
 
 const links = [
   { label: "Bộ sưu tập", href: "#collections" },
@@ -14,12 +17,33 @@ const links = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const { items, openCart } = useCartStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    useCartStore.persist.rehydrate();
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const cartCount = mounted ? items.reduce((sum, i) => sum + i.quantity, 0) : 0;
 
   return (
     <>
@@ -58,11 +82,34 @@ export function Navbar() {
             ))}
           </nav>
 
-          {/* CTA */}
+          {/* Actions */}
           <div className="hidden md:flex items-center gap-4">
-            <button className="text-sm tracking-widest uppercase text-stone hover:text-charcoal transition-colors">
-              Tư vấn
+            {/* Search */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="flex items-center gap-2 text-stone hover:text-charcoal transition-colors group"
+              aria-label="Tìm kiếm"
+            >
+              <Search size={16} />
+              <span className="text-xs text-stone/50 border border-linen rounded px-1.5 py-0.5 group-hover:border-stone transition-colors hidden lg:inline">
+                ⌘K
+              </span>
             </button>
+
+            {/* Cart */}
+            <button
+              onClick={openCart}
+              className="relative text-stone hover:text-charcoal transition-colors"
+              aria-label="Giỏ hàng"
+            >
+              <ShoppingBag size={18} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-gold text-charcoal text-[9px] flex items-center justify-center font-medium">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+
             <Link
               href="#products"
               className="px-6 py-2.5 bg-charcoal text-warm-white text-xs tracking-widest uppercase hover:bg-gold transition-colors duration-300 rounded-full"
@@ -71,25 +118,38 @@ export function Navbar() {
             </Link>
           </div>
 
-          {/* Hamburger */}
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden flex flex-col gap-1.5 p-2"
-            aria-label="Menu"
-          >
-            <motion.span
-              animate={menuOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
-              className="block w-6 h-px bg-charcoal origin-center"
-            />
-            <motion.span
-              animate={menuOpen ? { opacity: 0 } : { opacity: 1 }}
-              className="block w-6 h-px bg-charcoal"
-            />
-            <motion.span
-              animate={menuOpen ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }}
-              className="block w-6 h-px bg-charcoal origin-center"
-            />
-          </button>
+          {/* Mobile: search + cart + hamburger */}
+          <div className="md:hidden flex items-center gap-3">
+            <button onClick={() => setSearchOpen(true)} className="text-stone hover:text-charcoal transition-colors" aria-label="Tìm kiếm">
+              <Search size={18} />
+            </button>
+            <button onClick={openCart} className="relative text-stone hover:text-charcoal transition-colors" aria-label="Giỏ hàng">
+              <ShoppingBag size={18} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-gold text-charcoal text-[9px] flex items-center justify-center font-medium">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="flex flex-col gap-1.5 p-2"
+              aria-label="Menu"
+            >
+              <motion.span
+                animate={menuOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
+                className="block w-6 h-px bg-charcoal origin-center"
+              />
+              <motion.span
+                animate={menuOpen ? { opacity: 0 } : { opacity: 1 }}
+                className="block w-6 h-px bg-charcoal"
+              />
+              <motion.span
+                animate={menuOpen ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }}
+                className="block w-6 h-px bg-charcoal origin-center"
+              />
+            </button>
+          </div>
         </div>
       </motion.header>
 
@@ -122,6 +182,9 @@ export function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Search Dialog */}
+      <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }

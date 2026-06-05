@@ -19,6 +19,31 @@ export type Category = {
   products: Product[];
 };
 
+export type ProductWithCategory = Product & { categoryId: string; categoryTitle: string };
+
+export function getAllProducts(): ProductWithCategory[] {
+  return categories.flatMap((cat) =>
+    cat.products.map((p) => ({ ...p, categoryId: cat.id, categoryTitle: cat.title }))
+  );
+}
+
+export function getProductById(id: number): ProductWithCategory | undefined {
+  for (const cat of categories) {
+    const product = cat.products.find((p) => p.id === id);
+    if (product) return { ...product, categoryId: cat.id, categoryTitle: cat.title };
+  }
+}
+
+export function getRelatedProducts(id: number, limit = 4): ProductWithCategory[] {
+  const product = getProductById(id);
+  if (!product) return [];
+  return categories
+    .find((c) => c.id === product.categoryId)
+    ?.products.filter((p) => p.id !== id)
+    .slice(0, limit)
+    .map((p) => ({ ...p, categoryId: product.categoryId, categoryTitle: product.categoryTitle })) ?? [];
+}
+
 export const categories: Category[] = [
   {
     id: "luxury-fabric",
