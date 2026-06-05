@@ -86,14 +86,14 @@ export function FeaturedProducts() {
           <div className="flex gap-3">
             <button
               onClick={scrollPrev}
-              className="w-12 h-12 border border-linen flex items-center justify-center text-stone hover:border-charcoal hover:text-charcoal transition-colors duration-300"
+              className="w-12 h-12 border border-linen rounded-full flex items-center justify-center text-stone hover:border-charcoal hover:text-charcoal transition-colors duration-300"
               aria-label="Previous"
             >
               ←
             </button>
             <button
               onClick={scrollNext}
-              className="w-12 h-12 border border-linen flex items-center justify-center text-stone hover:border-charcoal hover:text-charcoal transition-colors duration-300"
+              className="w-12 h-12 border border-linen rounded-full flex items-center justify-center text-stone hover:border-charcoal hover:text-charcoal transition-colors duration-300"
               aria-label="Next"
             >
               →
@@ -118,7 +118,7 @@ export function FeaturedProducts() {
               className="flex-none w-72 md:w-80 group cursor-pointer"
             >
               {/* Product image area */}
-              <div className="relative aspect-[3/4] mb-5 overflow-hidden bg-linen">
+              <div className="relative aspect-[3/4] mb-5 overflow-hidden bg-linen rounded-xl">
                 {/* Color swatch preview */}
                 <div
                   className="absolute inset-0 transition-transform duration-700 group-hover:scale-105"
@@ -131,14 +131,7 @@ export function FeaturedProducts() {
                 <div
                   className="absolute inset-0 opacity-30"
                   style={{
-                    backgroundImage: `repeating-linear-gradient(
-                      0deg, transparent, transparent 3px,
-                      rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px
-                    ),
-                    repeating-linear-gradient(
-                      90deg, transparent, transparent 3px,
-                      rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px
-                    )`,
+                    backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px)`,
                   }}
                 />
 

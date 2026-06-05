@@ -48,13 +48,13 @@ export function ContactBanner() {
         >
           <a
             href="tel:+84901234567"
-            className="px-10 py-4 bg-charcoal text-warm-white text-sm tracking-widest uppercase hover:bg-gold transition-colors duration-300 min-w-48 text-center"
+            className="px-10 py-4 bg-charcoal text-warm-white text-sm tracking-widest uppercase hover:bg-gold transition-colors duration-300 min-w-48 text-center rounded-full"
           >
             Gọi ngay
           </a>
           <a
             href="mailto:hello@maisondrage.vn"
-            className="px-10 py-4 border border-charcoal text-charcoal text-sm tracking-widest uppercase hover:border-gold hover:text-gold transition-colors duration-300 min-w-48 text-center"
+            className="px-10 py-4 border border-charcoal text-charcoal text-sm tracking-widest uppercase hover:border-gold hover:text-gold transition-colors duration-300 min-w-48 text-center rounded-full"
           >
             Gửi email
           </a>

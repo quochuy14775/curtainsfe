@@ -65,7 +65,7 @@ export function Navbar() {
             </button>
             <Link
               href="#products"
-              className="px-6 py-2.5 bg-charcoal text-warm-white text-xs tracking-widest uppercase hover:bg-gold transition-colors duration-300"
+              className="px-6 py-2.5 bg-charcoal text-warm-white text-xs tracking-widest uppercase hover:bg-gold transition-colors duration-300 rounded-full"
             >
               Mua ngay
             </Link>

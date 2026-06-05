@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 
 const stats = [
   { number: "15+", label: "Năm kinh nghiệm" },
@@ -13,13 +13,6 @@ const stats = [
 export function AboutSection() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
-
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-
-  const y = useTransform(scrollYProgress, [0, 1], [-40, 40]);
 
   return (
     <section id="about" className="py-28 bg-charcoal overflow-hidden">
@@ -87,7 +80,6 @@ export function AboutSection() {
           <div>
             {/* Parallax decorative block */}
             <motion.div
-              style={{ y }}
               className="relative mb-12 aspect-square max-w-sm mx-auto"
             >
               <div className="absolute inset-0 border border-gold/20" />
@@ -122,7 +114,7 @@ export function AboutSection() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={inView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.6, delay: 0.3 + i * 0.1 }}
-                  className="border border-white/10 p-6 hover:border-gold/40 transition-colors duration-300"
+                  className="border border-white/10 p-6 hover:border-gold/40 transition-colors duration-300 rounded-2xl"
                 >
                   <p className="font-heading text-3xl text-gold mb-1">
                     {stat.number}
