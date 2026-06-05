@@ -1,9 +1,88 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, ChevronDown } from "lucide-react";
 import { categories } from "@/lib/data";
+
+const CATEGORY_OPTIONS = [
+  { value: "", label: "Chọn loại rèm..." },
+  ...categories.map((c) => ({ value: c.id, label: c.title })),
+  { value: "other", label: "Khác / Chưa xác định" },
+];
+
+function CustomSelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const selected = CATEGORY_OPTIONS.find((o) => o.value === value);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className={`w-full flex items-center justify-between border-b py-3 text-sm transition-colors duration-200 outline-none ${
+          open ? "border-gold" : "border-linen hover:border-stone/40"
+        } ${value ? "text-charcoal" : "text-stone/50"}`}
+      >
+        <span>{selected?.label ?? "Chọn loại rèm..."}</span>
+        <motion.span
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+          className="text-stone shrink-0 ml-2"
+        >
+          <ChevronDown size={14} />
+        </motion.span>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.ul
+            initial={{ opacity: 0, y: -6, scaleY: 0.95 }}
+            animate={{ opacity: 1, y: 0, scaleY: 1 }}
+            exit={{ opacity: 0, y: -6, scaleY: 0.95 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            style={{ transformOrigin: "top" }}
+            className="absolute z-30 top-full left-0 right-0 mt-1 bg-warm-white border border-linen rounded-xl shadow-xl overflow-hidden"
+          >
+            {CATEGORY_OPTIONS.map((opt) => (
+              <li key={opt.value}>
+                <button
+                  type="button"
+                  onClick={() => { onChange(opt.value); setOpen(false); }}
+                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors duration-150 ${
+                    opt.value === value
+                      ? "text-gold bg-gold/5"
+                      : opt.value === ""
+                      ? "text-stone/50"
+                      : "text-charcoal hover:bg-cream hover:text-gold"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              </li>
+            ))}
+          </motion.ul>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 type FormState = {
   name: string;
@@ -149,13 +228,10 @@ export function ContactBanner() {
                     <label className="block text-stone text-[10px] tracking-widest uppercase mb-2">
                       Loại rèm quan tâm
                     </label>
-                    <select {...field("category")} className={`${inputCls} bg-warm-white`}>
-                      <option value="">Chọn loại rèm...</option>
-                      {categories.map((c) => (
-                        <option key={c.id} value={c.id}>{c.title}</option>
-                      ))}
-                      <option value="other">Khác / Chưa xác định</option>
-                    </select>
+                    <CustomSelect
+                      value={form.category}
+                      onChange={(v) => setForm((f) => ({ ...f, category: v }))}
+                    />
                   </div>
                 </div>
 
