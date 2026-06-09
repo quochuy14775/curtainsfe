@@ -201,7 +201,7 @@ export function ProductDialog({
                       value: tag,
                       label: tag || "Không có tag",
                     }))}
-                    value={form.tag}
+                    value={form.tag ?? ""}
                     onChange={(value) => setForm({ ...form, tag: value })}
                     label="Tag"
                   />
