@@ -21,6 +21,10 @@ export const metadata: Metadata = {
   title: "Maison Drapé — Luxury Curtains & Drapes",
   description:
     "Khám phá bộ sưu tập rèm cửa cao cấp. Nơi nghệ thuật và không gian sống hòa quyện.",
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({

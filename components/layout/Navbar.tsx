@@ -62,11 +62,11 @@ export function Navbar() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12 h-20 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="group flex flex-col leading-none">
-            <span className="font-heading text-xl font-semibold tracking-wide text-charcoal">
-              Maison
+            <span className="font-heading text-xl font-semibold tracking-wide text-charcoal dark:text-[#ede8e1]">
+              Rèm màn
             </span>
             <span className="font-heading text-xs tracking-[0.3em] text-gold uppercase">
-              Drapé
+              Ngọc Huệ
             </span>
           </Link>
 
