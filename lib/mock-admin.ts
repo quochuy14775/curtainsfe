@@ -20,8 +20,12 @@ export type DashboardStats = {
   totalOrders: number;
   pending: number;
   contacted: number;
+  confirmed: number;
   doneThisMonth: number;
-  estimatedRevenue: number; // VND
+  cancelled: number;
+  completionRate: number; // %
+  categoryBreakdown: { label: string; count: number }[];
+  topStaff: { name: string; count: number }[];
 };
 
 // ---------------------------------------------------------------------------
@@ -62,12 +66,32 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   });
 
+  const done = MOCK_ORDERS.filter((o) => o.status === "done").length;
+  const cancelled = MOCK_ORDERS.filter((o) => o.status === "cancelled").length;
+
+  const categoryBreakdown = Object.entries(CATEGORY_LABEL).map(([key, label]) => ({
+    label,
+    count: MOCK_ORDERS.filter((o) => o.category === key).length,
+  })).filter((c) => c.count > 0).sort((a, b) => b.count - a.count);
+
+  const staffMap = new Map<string, number>();
+  MOCK_ORDERS.forEach((o) => {
+    if (o.assignedTo) staffMap.set(o.assignedTo, (staffMap.get(o.assignedTo) ?? 0) + 1);
+  });
+  const topStaff = [...staffMap.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+
   return {
     totalOrders: MOCK_ORDERS.length,
     pending: MOCK_ORDERS.filter((o) => o.status === "pending").length,
     contacted: MOCK_ORDERS.filter((o) => o.status === "contacted").length,
+    confirmed: MOCK_ORDERS.filter((o) => o.status === "confirmed").length,
     doneThisMonth: thisMonth.filter((o) => o.status === "done").length,
-    estimatedRevenue: 87_500_000,
+    cancelled,
+    completionRate: Math.round((done / MOCK_ORDERS.length) * 100),
+    categoryBreakdown,
+    topStaff,
   };
 }
 

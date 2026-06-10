@@ -1,208 +1,254 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Plus } from "lucide-react";
-import { categories, getAllProducts, getProductById } from "@/lib/data";
-import { EditButton } from "./EditButton";
+import { Plus, Search, Pencil, Trash2 } from "lucide-react";
+import { buildODataQuery, contains } from "@/lib/odata";
+import { productService } from "@/services/productService";
+import type { ProductResponse } from "@/types/product";
+import { TAG_STYLES, formatVND } from "@/types/product";
 import { ProductDialog, type ProductFormData } from "./ProductDialog";
-import { DeleteDialog } from "./DeleteDialog";
-
-const TAG_COLOR: Record<string, string> = {
-  Bestseller: "bg-charcoal text-warm-white",
-  Mới: "bg-gold/20 text-yellow-800",
-  Limited: "bg-stone-200 text-stone-700",
-  Hot: "bg-red-100 text-red-700",
-  Smart: "bg-blue-100 text-blue-700",
-};
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { notify } from "@/lib/toast";
 
 export default function ProductsPage() {
-  const all = getAllProducts();
+  const [items, setItems] = useState<ProductResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [selected, setSelected] = useState<ProductResponse | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [tick, setTick] = useState(0);
 
-  const selectedProduct = selectedProductId ? getProductById(selectedProductId) : null;
+  const refresh = () => setTick((t) => t + 1);
 
-  const handleEdit = (id: number) => {
-    setSelectedProductId(id);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    let alive = true;
+
+    const query = buildODataQuery({
+      filter: debouncedSearch.trim() ? contains("Name", debouncedSearch) : undefined,
+      orderby: "Id desc",
+    });
+
+    productService.getAllAdmin(query)
+      .then((res) => { if (alive) setItems(res.value ?? []); })
+      .catch(() => { if (alive) notify.error("Không thể tải sản phẩm."); })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, [tick, debouncedSearch]);
+
+  const openCreate = () => {
+    setSelected(null);
     setIsDialogOpen(true);
   };
 
-  const handleCreate = () => {
-    setSelectedProductId(null);
+  const openEdit = (item: ProductResponse) => {
+    setSelected(item);
     setIsDialogOpen(true);
-  };
-
-  const handleDelete = (id: number) => {
-    setSelectedProductId(id);
-    setIsDeleteOpen(true);
   };
 
   const handleSave = async (data: ProductFormData) => {
-    setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setIsLoading(false);
-    setIsDialogOpen(false);
-    alert(`[Mock] ${selectedProductId ? "Sửa" : "Tạo"} sản phẩm: ${data.name}`);
+    setSaving(true);
+    try {
+      const payload = {
+        name: data.name,
+        material: data.material,
+        price: parseFloat(data.price),
+        tag: data.tag || undefined,
+        categoryId: parseInt(data.categoryId),
+      };
+      if (selected) {
+        await productService.update(selected.id, payload);
+        notify.success("Đã cập nhật sản phẩm.");
+      } else {
+        await productService.create(payload);
+        notify.success("Đã thêm sản phẩm mới.");
+      }
+      refresh();
+      setIsDialogOpen(false);
+    } catch {
+      notify.error("Lưu thất bại.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleConfirmDelete = async () => {
-    setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setIsLoading(false);
-    setIsDeleteOpen(false);
-    alert(`[Mock] Xóa sản phẩm ${selectedProduct?.name} thành công`);
+    if (!selected) return;
+    setSaving(true);
+    try {
+      await productService.delete(selected.id);
+      setItems((prev) => prev.filter((p) => p.id !== selected.id));
+      setIsDeleteOpen(false);
+      notify.success("Đã xóa sản phẩm.");
+    } catch {
+      notify.error("Xóa thất bại.");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const handleToggleActive = async (item: ProductResponse) => {
+    try {
+      await productService.toggleActive(item.id);
+      setItems((prev) =>
+        prev.map((p) => (p.id === item.id ? { ...p, isActived: !p.isActived } : p))
+      );
+      notify.success(item.isActived ? "Đã ẩn sản phẩm." : "Đã hiển thị sản phẩm.");
+    } catch {
+      notify.error("Cập nhật trạng thái thất bại.");
+    }
+  };
+
+  const activeCount = items.filter((p) => p.isActived).length;
 
   return (
     <div className="space-y-6 max-w-6xl">
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="font-heading text-2xl text-charcoal">Sản phẩm</h1>
-          <p className="text-stone text-sm mt-1">{all.length} sản phẩm · {categories.length} danh mục</p>
+          <p className="text-stone text-sm mt-1">{items.length} sản phẩm · {activeCount} đang hiển thị</p>
         </div>
-        <motion.button
-          onClick={handleCreate}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="flex items-center gap-2 px-5 py-3 bg-gold text-charcoal text-xs tracking-widest uppercase rounded-lg hover:bg-gold/90 transition-colors font-medium"
+        <button
+          onClick={openCreate}
+          className="flex items-center gap-2 px-4 py-2.5 bg-charcoal text-warm-white text-xs tracking-widest uppercase rounded-full hover:bg-gold transition-colors duration-200"
         >
-          <Plus size={16} />
-          Thêm sản phẩm
-        </motion.button>
+          <Plus size={14} /> Thêm sản phẩm
+        </button>
       </div>
 
-      {/* Category breakdown */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {categories.map((cat, idx) => (
-          <motion.div
-            key={cat.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.05, duration: 0.4 }}
-            whileHover={{ y: -4 }}
-            className="bg-warm-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-          >
-            <motion.div
-              className={`w-8 h-8 rounded-xl bg-gradient-to-br ${cat.bg} mb-3`}
-              whileHover={{ scale: 1.1, rotate: 5 }}
-            />
-            <p className="font-heading text-base text-charcoal">{cat.title}</p>
-            <p className="text-stone text-xs mt-0.5">{cat.products.length} sản phẩm</p>
-          </motion.div>
-        ))}
+      <div className="relative max-w-sm">
+        <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone/40" />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Tìm sản phẩm..."
+          className="w-full pl-9 pr-4 py-2.5 bg-warm-white border border-linen rounded-full text-sm text-charcoal placeholder:text-stone/40 focus:border-gold outline-none transition-colors"
+        />
       </div>
 
-      {/* Product table */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.2, duration: 0.5 }}
+        transition={{ delay: 0.1, duration: 0.4 }}
         className="bg-warm-white rounded-2xl shadow-sm overflow-hidden"
       >
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-linen">
-                {["ID", "Tên sản phẩm", "Danh mục", "Chất liệu", "Kích thước", "Giá", "Tag", ""].map((h) => (
-                  <th key={h} className="px-5 py-3.5 text-left text-[10px] tracking-widest uppercase text-stone font-normal whitespace-nowrap">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-linen">
-              {all.map((product, idx) => (
-                <motion.tr
-                  key={product.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.03, duration: 0.3 }}
-                  whileHover={{ backgroundColor: "rgba(253, 251, 248, 0.5)" }}
-                  className="group"
-                >
-                  <td className="px-5 py-3.5 text-stone text-xs font-mono">{product.id}</td>
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <motion.div
-                        className="w-7 h-7 rounded-lg shrink-0"
-                        style={{
-                          background: `linear-gradient(135deg, ${product.color}66, ${product.color}cc)`,
-                        }}
-                        whileHover={{ scale: 1.15 }}
-                      />
+        {loading ? (
+          <div className="py-16 text-center text-stone/40 text-sm">Đang tải...</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-linen bg-cream/40">
+                  {["ID", "Tên sản phẩm", "Danh mục", "Chất liệu", "Giá", "Tag", "Trạng thái", ""].map((h) => (
+                    <th key={h} className="px-5 py-3.5 text-left text-[10px] tracking-widest uppercase text-stone font-normal whitespace-nowrap">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-linen">
+                {items.map((product, idx) => (
+                  <motion.tr
+                    key={product.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.03, duration: 0.3 }}
+                    className="group hover:bg-cream/30 transition-colors"
+                  >
+                    <td className="px-5 py-3.5 text-stone text-xs font-mono">{product.id}</td>
+                    <td className="px-5 py-3.5">
                       <span className="font-heading text-sm text-charcoal">{product.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5 text-stone text-xs whitespace-nowrap">{product.categoryTitle}</td>
-                  <td className="px-5 py-3.5 text-stone text-xs">{product.material}</td>
-                  <td className="px-5 py-3.5 text-stone text-xs whitespace-nowrap">{product.width} × {product.drop}</td>
-                  <td className="px-5 py-3.5 text-charcoal text-sm font-medium whitespace-nowrap">{product.price}₫</td>
-                  <td className="px-5 py-3.5">
-                    {product.tag ? (
-                      <motion.span
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: idx * 0.03 + 0.1 }}
-                        className={`px-2 py-0.5 rounded-full text-[9px] font-medium tracking-widest uppercase inline-block ${TAG_COLOR[product.tag] ?? "bg-stone-100 text-stone-600"}`}
+                    </td>
+                    <td className="px-5 py-3.5 text-stone text-xs whitespace-nowrap">{product.categoryTitle ?? "—"}</td>
+                    <td className="px-5 py-3.5 text-stone text-xs">{product.material}</td>
+                    <td className="px-5 py-3.5 text-charcoal text-sm font-medium whitespace-nowrap">
+                      {formatVND(product.price)} ₫
+                    </td>
+                    <td className="px-5 py-3.5">
+                      {product.tag ? (
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-medium tracking-widest uppercase ${TAG_STYLES[product.tag] ?? "bg-stone-100 text-stone-600"}`}>
+                          {product.tag}
+                        </span>
+                      ) : (
+                        <span className="text-stone/30 text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <button
+                        onClick={() => handleToggleActive(product)}
+                        className={`px-2.5 py-1 rounded-full text-[9px] font-medium tracking-widest uppercase transition-colors ${
+                          product.isActived
+                            ? "bg-green-50 text-green-700 hover:bg-red-50 hover:text-red-600"
+                            : "bg-stone-100 text-stone-500 hover:bg-green-50 hover:text-green-700"
+                        }`}
                       >
-                        {product.tag}
-                      </motion.span>
-                    ) : (
-                      <span className="text-stone/30 text-xs">—</span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <EditButton productId={product.id} onEdit={handleEdit} />
-                      <motion.button
-                        onClick={() => handleDelete(product.id)}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="text-xs tracking-widest uppercase text-stone/60 hover:text-red-600 transition-colors whitespace-nowrap"
-                      >
-                        Xóa
-                      </motion.button>
-                    </div>
-                  </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                        {product.isActived ? "Hiển thị" : "Ẩn"}
+                      </button>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => openEdit(product)}
+                          className="p-2 rounded-lg text-stone hover:text-charcoal hover:bg-linen transition-colors"
+                        >
+                          <Pencil size={13} />
+                        </button>
+                        <button
+                          onClick={() => { setSelected(product); setIsDeleteOpen(true); }}
+                          className="p-2 rounded-lg text-stone hover:text-red-500 hover:bg-red-50 transition-colors"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+            {items.length === 0 && (
+              <div className="py-16 text-center text-stone/40 text-sm">
+                {debouncedSearch ? `Không tìm thấy "${debouncedSearch}"` : "Chưa có sản phẩm nào"}
+              </div>
+            )}
+          </div>
+        )}
       </motion.div>
 
-      {/* Dialogs */}
       <ProductDialog
+        key={selected?.id ?? "new"}
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         onSave={handleSave}
         initialData={
-          selectedProduct
+          selected
             ? {
-                name: selectedProduct.name,
-                material: selectedProduct.material,
-                price: selectedProduct.price,
-                categoryId: selectedProduct.categoryId,
-                tag: selectedProduct.tag,
-                color: selectedProduct.color,
-                width: selectedProduct.width,
-                drop: selectedProduct.drop,
+                name: selected.name,
+                material: selected.material,
+                price: String(selected.price),
+                categoryId: String(selected.categoryId),
+                tag: selected.tag ?? "",
               }
             : undefined
         }
-        title={selectedProductId ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
-        isLoading={isLoading}
+        title={selected ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
+        isLoading={saving}
       />
 
-      <DeleteDialog
+      <ConfirmDialog
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}
         onConfirm={handleConfirmDelete}
-        productName={selectedProduct?.name || ""}
-        isLoading={isLoading}
+        title="Xóa sản phẩm?"
+        description={`Bạn chắc chắn muốn xóa "${selected?.name ?? ""}"? Hành động này không thể hoàn tác.`}
+        isLoading={saving}
       />
     </div>
   );

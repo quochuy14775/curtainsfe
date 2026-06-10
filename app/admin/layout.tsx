@@ -3,12 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, ClipboardList, Package, LogOut, Menu, X } from "lucide-react";
+import { Toaster } from "sonner";
+import { LayoutDashboard, ClipboardList, Package, Tag, LogOut, Menu, X } from "lucide-react";
 
 const navItems = [
   { href: "/admin/dashboard", label: "Tổng quan", icon: LayoutDashboard },
   { href: "/admin/orders", label: "Đơn tư vấn", icon: ClipboardList },
   { href: "/admin/products", label: "Sản phẩm", icon: Package },
+  { href: "/admin/categories", label: "Phân loại", icon: Tag },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -102,8 +104,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         <main className="flex-1 p-6 md:p-8 overflow-auto">
-          {children}
+          <div className="max-w-6xl mx-auto">
+            {children}
+          </div>
         </main>
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            style: {
+              background: "#2c2c2c",
+              color: "#fdfaf6",
+              border: "1px solid rgba(201,169,110,0.25)",
+              borderRadius: "14px",
+              fontFamily: "var(--font-body, sans-serif)",
+              fontSize: "13px",
+              letterSpacing: "0.01em",
+              padding: "14px 18px",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+            },
+          }}
+        />
       </div>
     </div>
   );

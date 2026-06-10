@@ -4,36 +4,34 @@ import { useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
+import { authService } from "@/services/authService";
 
 export function LoginClient() {
   const router = useRouter();
   const params = useSearchParams();
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    const res = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
-
-    setLoading(false);
-    if (res.ok) {
+    try {
+      await authService.login(username, password);
       const from = params.get("from") ?? "/admin/dashboard";
       router.push(from);
       router.refresh();
-    } else {
-      setError("Mật khẩu không đúng.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Đăng nhập thất bại.");
       setPassword("");
-      inputRef.current?.focus();
+      passwordRef.current?.focus();
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,16 +51,30 @@ export function LoginClient() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-stone text-[10px] tracking-widest uppercase mb-2">
+              Tên đăng nhập
+            </label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              autoFocus
+              placeholder="admin"
+              className="w-full border-b border-linen focus:border-gold outline-none py-3 text-charcoal placeholder:text-stone/40 text-sm transition-colors duration-200 bg-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-stone text-[10px] tracking-widest uppercase mb-2">
               Mật khẩu
             </label>
             <div className="relative">
               <input
-                ref={inputRef}
+                ref={passwordRef}
                 type={show ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                autoFocus
                 placeholder="••••••••"
                 className="w-full border-b border-linen focus:border-gold outline-none py-3 pr-10 text-charcoal placeholder:text-stone/40 text-sm transition-colors duration-200 bg-transparent"
               />
@@ -82,16 +94,12 @@ export function LoginClient() {
 
           <button
             type="submit"
-            disabled={loading || !password}
+            disabled={loading || !username || !password}
             className="w-full py-3.5 bg-charcoal text-warm-white text-xs tracking-widest uppercase hover:bg-gold transition-colors duration-300 rounded-full disabled:opacity-50 mt-2"
           >
             {loading ? "Đang kiểm tra..." : "Đăng nhập"}
           </button>
         </form>
-
-        <p className="text-stone/40 text-[10px] text-center mt-8">
-          Mật khẩu mặc định: <span className="font-mono">admin123</span>
-        </p>
       </motion.div>
     </div>
   );
