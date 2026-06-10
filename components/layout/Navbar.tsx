@@ -9,10 +9,9 @@ import { SearchDialog } from "@/components/sections/SearchDialog";
 import { useTheme } from "@/components/providers/ThemeProvider";
 
 const links = [
-  { label: "Bộ sưu tập", href: "#collections" },
-  { label: "Sản phẩm", href: "#products" },
-  { label: "Về chúng tôi", href: "#about" },
-  { label: "Liên hệ", href: "#contact" },
+  { label: "Sản phẩm", href: "/products" },
+  { label: "Về chúng tôi", href: "/#about" },
+  { label: "Liên hệ", href: "/#contact" },
 ];
 
 export function Navbar() {
@@ -127,7 +126,7 @@ export function Navbar() {
             </button>
 
             <Link
-              href="#products"
+              href="/products"
               className="px-6 py-2.5 bg-charcoal text-[#fdfbf8] text-xs tracking-widest uppercase hover:bg-gold transition-colors duration-300 rounded-full"
             >
               Mua ngay
