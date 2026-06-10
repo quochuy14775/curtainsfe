@@ -98,6 +98,11 @@ function Hero() {
   const overlay = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Reset về trạng thái ban đầu rõ ràng — quan trọng khi navigate back
+    gsap.set([curtainL.current, curtainR.current], { scaleX: 1 });
+    gsap.set(overlay.current, { opacity: 1 });
+    gsap.set(content.current, { opacity: 0, y: 50 });
+
     const tl = gsap.timeline({ delay: 0.2 });
     tl.to([curtainL.current, curtainR.current], {
       scaleX: 0,
@@ -105,7 +110,11 @@ function Hero() {
       ease: "power4.inOut",
     })
       .to(overlay.current, { opacity: 0, duration: 0.5, ease: "power2.out" }, "-=0.7")
-      .from(content.current, { opacity: 0, y: 50, duration: 1, ease: "power3.out" }, "-=0.5");
+      .to(content.current, { opacity: 1, y: 0, duration: 1, ease: "power3.out" }, "-=0.5");
+
+    return () => {
+      tl.kill();
+    };
   }, []);
 
   return (
