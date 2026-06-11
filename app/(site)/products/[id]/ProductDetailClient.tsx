@@ -1,11 +1,14 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import Link from "next/link";
-import { ArrowLeft, ShoppingBag, Check, Truck, RotateCcw } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Check, Truck, RotateCcw, ZoomIn } from "lucide-react";
 import type { ProductWithCategory } from "@/lib/data";
 import { useCartStore } from "@/lib/cart-store";
+import { useRecentlyViewed } from "@/lib/recently-viewed-store";
+import { WishlistButton } from "@/components/wishlist/WishlistButton";
+import { RecentlyViewed } from "@/components/sections/RecentlyViewed";
 
 const tagColor: Record<string, string> = {
   Bestseller: "bg-charcoal text-[#fdfbf8]",
@@ -37,16 +40,34 @@ type Props = {
 export function ProductDetailClient({ product, related }: Props) {
   const { addItem } = useCartStore();
   const relatedRef = useRef<HTMLDivElement>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
   const inView = useInView(relatedRef, { once: true, margin: "-80px" });
 
   const [activeView, setActiveView] = useState(0);
   const [activeTab, setActiveTab] = useState<TabId>("specs");
   const [added, setAdded] = useState(false);
+  // Lens kính lúp soi chất liệu vải — vị trí theo % để scale mọi kích thước
+  const [lens, setLens] = useState<{ x: number; y: number } | null>(null);
+
+  // Ghi nhận sản phẩm đã xem
+  useEffect(() => {
+    useRecentlyViewed.persist.rehydrate();
+    useRecentlyViewed.getState().add(product.id);
+  }, [product.id]);
 
   const handleAddToCart = () => {
     addItem(product);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
+  };
+
+  const handleLensMove = (e: React.MouseEvent) => {
+    const rect = galleryRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setLens({
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
+    });
   };
 
   return (
@@ -74,7 +95,12 @@ export function ProductDetailClient({ product, related }: Props) {
             className="flex flex-col gap-4"
           >
             {/* Main view */}
-            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-linen">
+            <div
+              ref={galleryRef}
+              onMouseMove={handleLensMove}
+              onMouseLeave={() => setLens(null)}
+              className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-linen cursor-zoom-in"
+            >
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeView}
@@ -124,6 +150,61 @@ export function ProductDetailClient({ product, related }: Props) {
                 />
                 <span className="text-white/60 text-[9px] tracking-widest uppercase">{product.color}</span>
               </div>
+
+              {/* Wishlist */}
+              <div className="absolute bottom-4 left-4">
+                <WishlistButton productId={product.id} />
+              </div>
+
+              {/* Zoom hint */}
+              {!lens && (
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-black/20 backdrop-blur-sm text-white/70 text-[9px] tracking-widest uppercase px-2.5 py-1 rounded-full pointer-events-none">
+                  <ZoomIn size={10} /> Di chuột soi vải
+                </div>
+              )}
+
+              {/* Magnifier lens — texture vải phóng đại 3× */}
+              {lens && (
+                <div
+                  className="absolute w-44 h-44 rounded-full pointer-events-none border-2 border-white/70 shadow-2xl"
+                  style={{
+                    left: `${lens.x}%`,
+                    top: `${lens.y}%`,
+                    transform: "translate(-50%, -50%)",
+                    background: `linear-gradient(${GALLERY_VIEWS[activeView].angle}, ${product.color}55 0%, ${product.color}99 40%, ${product.color}dd 100%)`,
+                  }}
+                >
+                  {/* Weave dọc phóng to */}
+                  <div
+                    className="absolute inset-0 rounded-full"
+                    style={{
+                      opacity: 0.5,
+                      backgroundImage:
+                        "repeating-linear-gradient(0deg, transparent, transparent 11px, rgba(0,0,0,0.14) 11px, rgba(0,0,0,0.14) 14px)",
+                    }}
+                  />
+                  {/* Weave ngang phóng to */}
+                  <div
+                    className="absolute inset-0 rounded-full"
+                    style={{
+                      opacity: 0.3,
+                      backgroundImage:
+                        "repeating-linear-gradient(90deg, transparent, transparent 11px, rgba(0,0,0,0.12) 11px, rgba(0,0,0,0.12) 14px)",
+                    }}
+                  />
+                  {/* Sheen kính */}
+                  <div
+                    className="absolute inset-0 rounded-full"
+                    style={{
+                      background:
+                        "radial-gradient(circle at 32% 28%, rgba(255,255,255,0.35) 0%, transparent 42%)",
+                    }}
+                  />
+                  <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-white/80 text-[8px] tracking-widest uppercase">
+                    ×3
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Thumbnails */}
@@ -412,6 +493,9 @@ export function ProductDetailClient({ product, related }: Props) {
           </div>
         </section>
       )}
+
+      {/* Recently viewed */}
+      <RecentlyViewed excludeId={product.id} />
     </div>
   );
 }

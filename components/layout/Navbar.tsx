@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Search, ShoppingBag, Sun, Moon } from "lucide-react";
+import { Search, ShoppingBag, Sun, Moon, Heart } from "lucide-react";
 import { useCartStore } from "@/lib/cart-store";
+import { useWishlist } from "@/lib/wishlist-store";
 import { SearchDialog } from "@/components/sections/SearchDialog";
 import { useTheme } from "@/components/providers/ThemeProvider";
 
@@ -19,12 +20,15 @@ export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const { items, openCart } = useCartStore();
+  const wishlistIds = useWishlist((s) => s.ids);
+  const openWishlist = useWishlist((s) => s.openPanel);
   const [mounted, setMounted] = useState(false);
   const { theme, toggle } = useTheme();
 
   useEffect(() => {
     setMounted(true);
     useCartStore.persist.rehydrate();
+    useWishlist.persist.rehydrate();
   }, []);
 
   useEffect(() => {
@@ -45,6 +49,7 @@ export function Navbar() {
   }, []);
 
   const cartCount = mounted ? items.reduce((sum, i) => sum + i.quantity, 0) : 0;
+  const wishCount = mounted ? wishlistIds.length : 0;
 
   return (
     <>
@@ -107,6 +112,20 @@ export function Navbar() {
                 {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
               </button>
             )}
+
+            {/* Wishlist */}
+            <button
+              onClick={openWishlist}
+              className="relative text-stone hover:text-charcoal transition-colors"
+              aria-label="Yêu thích"
+            >
+              <Heart size={17} className={wishCount > 0 ? "fill-gold text-gold" : ""} />
+              {wishCount > 0 && (
+                <span className="absolute -top-2 -right-2 flex w-4 h-4 rounded-full bg-gold text-[#2c2c2c] text-[8px] items-center justify-center font-bold">
+                  {wishCount}
+                </span>
+              )}
+            </button>
 
             {/* Cart */}
             <button

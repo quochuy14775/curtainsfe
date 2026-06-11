@@ -14,6 +14,11 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { categories } from "@/lib/data";
+import { Magnetic } from "@/components/ui/Magnetic";
+import { RoomVisualizer } from "@/components/sections/RoomVisualizer";
+import { PriceEstimator } from "@/components/sections/PriceEstimator";
+import { BeforeAfter } from "@/components/sections/BeforeAfter";
+import { Lookbook } from "@/components/sections/Lookbook";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -59,10 +64,10 @@ const STEPS = [
 ];
 
 const STATS = [
-  { number: "2.400+", label: "Không gian đã hoàn thiện" },
-  { number: "98%", label: "Khách hàng hài lòng" },
-  { number: "15+", label: "Năm kinh nghiệm" },
-  { number: "80+", label: "Chất liệu độc quyền" },
+  { value: 2400, suffix: "+", format: true, label: "Không gian đã hoàn thiện" },
+  { value: 98, suffix: "%", format: false, label: "Khách hàng hài lòng" },
+  { value: 15, suffix: "+", format: false, label: "Năm kinh nghiệm" },
+  { value: 80, suffix: "+", format: false, label: "Chất liệu độc quyền" },
 ];
 
 const TESTIMONIALS = [
@@ -91,6 +96,42 @@ const TESTIMONIALS = [
 
 // ─── HERO ────────────────────────────────────────────────────────────────────
 
+// Deterministic particle layout — same values on server & client (no hydration drift)
+const GOLD_DUST = [
+  { left: "8%", top: "70%", size: 3, duration: "13s", delay: "0s", drift: "28px", opacity: 0.45 },
+  { left: "18%", top: "55%", size: 2, duration: "17s", delay: "2.5s", drift: "-20px", opacity: 0.35 },
+  { left: "31%", top: "78%", size: 4, duration: "15s", delay: "5s", drift: "16px", opacity: 0.5 },
+  { left: "47%", top: "64%", size: 2, duration: "19s", delay: "1s", drift: "-30px", opacity: 0.3 },
+  { left: "58%", top: "82%", size: 3, duration: "14s", delay: "7s", drift: "24px", opacity: 0.45 },
+  { left: "69%", top: "58%", size: 2, duration: "16s", delay: "3.5s", drift: "-14px", opacity: 0.35 },
+  { left: "81%", top: "72%", size: 4, duration: "18s", delay: "6s", drift: "20px", opacity: 0.5 },
+  { left: "91%", top: "62%", size: 2, duration: "15s", delay: "0.5s", drift: "-26px", opacity: 0.3 },
+];
+
+// Line-by-line editorial reveal for the hero heading
+function RevealLine({
+  children,
+  delay,
+  className = "",
+}: {
+  children: React.ReactNode;
+  delay: number;
+  className?: string;
+}) {
+  return (
+    <span className="block overflow-hidden">
+      <motion.span
+        className={`block ${className}`}
+        initial={{ y: "110%" }}
+        animate={{ y: 0 }}
+        transition={{ duration: 1.1, delay, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {children}
+      </motion.span>
+    </span>
+  );
+}
+
 function Hero() {
   const curtainL = useRef<HTMLDivElement>(null);
   const curtainR = useRef<HTMLDivElement>(null);
@@ -118,7 +159,7 @@ function Hero() {
   }, []);
 
   return (
-    <section className="relative h-screen min-h-[700px] overflow-hidden">
+    <section className="relative h-screen min-h-[700px] overflow-hidden grain">
       <div
         className="absolute inset-0"
         style={{ background: "linear-gradient(150deg,#3a3028 0%,#2c2420 40%,#1e1a16 100%)" }}
@@ -137,6 +178,28 @@ function Hero() {
             "radial-gradient(ellipse 80% 50% at 50% 60%,rgba(201,169,110,0.25) 0%,transparent 70%)",
         }}
       />
+      {/* Cinematic vignette */}
+      <div className="absolute inset-0 hero-vignette pointer-events-none" />
+
+      {/* Floating gold dust */}
+      <div className="absolute inset-0 z-[5] pointer-events-none" aria-hidden>
+        {GOLD_DUST.map((d, i) => (
+          <span
+            key={i}
+            className="gold-dust"
+            style={{
+              left: d.left,
+              top: d.top,
+              width: d.size,
+              height: d.size,
+              ["--dust-duration" as string]: d.duration,
+              ["--dust-delay" as string]: d.delay,
+              ["--dust-x" as string]: d.drift,
+              ["--dust-opacity" as string]: d.opacity,
+            }}
+          />
+        ))}
+      </div>
 
       <div ref={overlay} className="absolute inset-0 bg-[#2c2c2c] z-10" style={{ willChange: "opacity" }} />
 
@@ -161,10 +224,11 @@ function Hero() {
           Bộ sưu tập 2026 · Miễn phí tư vấn tận nhà
         </motion.p>
 
-        <h1 className="font-heading text-5xl md:text-7xl lg:text-8xl text-[#fdfbf8] leading-[1.05] mb-6 max-w-5xl">
-          Rèm Cửa Cao Cấp
-          <br />
-          <em className="text-gold not-italic">Cho Không Gian Của Bạn</em>
+        <h1 className="font-heading text-5xl md:text-7xl lg:text-8xl text-[#fdfbf8] leading-[1.1] mb-6 max-w-5xl">
+          <RevealLine delay={1.5}>Rèm Cửa Cao Cấp</RevealLine>
+          <RevealLine delay={1.65}>
+            <em className="text-gold not-italic">Cho Không Gian Của Bạn</em>
+          </RevealLine>
         </h1>
 
         <p className="text-[#fdfbf8]/60 text-lg md:text-xl max-w-2xl leading-relaxed mb-10">
@@ -173,18 +237,22 @@ function Hero() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 items-center">
-          <Link
-            href="/products"
-            className="px-10 py-4 bg-gold text-[#2c2c2c] text-sm tracking-widest uppercase hover:bg-[#e8d5b0] transition-colors duration-300 rounded-full font-medium"
-          >
-            Khám phá bộ sưu tập
-          </Link>
-          <a
-            href="#contact"
-            className="px-10 py-4 border border-[#fdfbf8]/30 text-[#fdfbf8]/80 text-sm tracking-widest uppercase hover:border-gold hover:text-gold transition-colors duration-300 rounded-full"
-          >
-            Tư vấn miễn phí
-          </a>
+          <Magnetic>
+            <Link
+              href="/products"
+              className="inline-block px-10 py-4 bg-gold text-[#2c2c2c] text-sm tracking-widest uppercase hover:bg-[#e8d5b0] transition-colors duration-300 rounded-full font-medium shadow-[0_8px_30px_rgba(201,169,110,0.25)]"
+            >
+              Khám phá bộ sưu tập
+            </Link>
+          </Magnetic>
+          <Magnetic strength={0.2}>
+            <a
+              href="#contact"
+              className="inline-block px-10 py-4 border border-[#fdfbf8]/30 text-[#fdfbf8]/80 text-sm tracking-widest uppercase hover:border-gold hover:text-gold transition-colors duration-300 rounded-full"
+            >
+              Tư vấn miễn phí
+            </a>
+          </Magnetic>
         </div>
 
         <div className="mt-14 flex flex-wrap justify-center gap-8 text-[#fdfbf8]/40 text-xs tracking-widest uppercase">
@@ -220,13 +288,8 @@ const marqueeTrack = [...marqueeItems, ...marqueeItems];
 
 function Marquee() {
   return (
-    <div className="bg-[#2c2c2c] border-y border-white/10 py-4 overflow-hidden select-none">
-      <motion.div
-        className="flex whitespace-nowrap"
-        animate={{ x: ["0%", "-50%"] }}
-        transition={{ duration: 30, ease: "linear", repeat: Infinity }}
-        style={{ willChange: "transform" }}
-      >
+    <div className="bg-[#2c2c2c] border-y border-white/10 py-4 overflow-hidden select-none marquee-mask">
+      <div className="flex whitespace-nowrap marquee-track">
         {marqueeTrack.map((item, i) => (
           <span
             key={i}
@@ -239,7 +302,7 @@ function Marquee() {
             {item}
           </span>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -283,9 +346,9 @@ function WhyUs() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.7, delay: 0.1 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                className="group bg-[#fdfbf8] border border-[#e8e0d5] rounded-2xl p-8 hover:border-gold/50 hover:shadow-lg transition-all duration-500"
+                className="group card-sheen bg-[#fdfbf8] border border-[#e8e0d5] rounded-2xl p-8 hover:border-gold/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
               >
-                <div className="w-12 h-12 rounded-full border border-gold/30 flex items-center justify-center mb-6 group-hover:bg-gold/10 transition-colors duration-300">
+                <div className="w-12 h-12 rounded-full border border-gold/30 flex items-center justify-center mb-6 group-hover:bg-gold/10 group-hover:scale-110 transition-all duration-300">
                   <Icon size={20} className="text-gold" />
                 </div>
                 <h3 className="font-heading text-lg text-[#2c2c2c] mb-3 leading-tight">{item.title}</h3>
@@ -306,7 +369,7 @@ function HowItWorks() {
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section className="py-28 bg-[#2c2c2c] overflow-hidden">
+    <section className="relative py-28 bg-[#2c2c2c] overflow-hidden grain">
       <div ref={ref} className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="text-center mb-20">
           <motion.p
@@ -364,12 +427,14 @@ function HowItWorks() {
           transition={{ duration: 0.7, delay: 0.6 }}
           className="text-center mt-16"
         >
-          <a
-            href="#contact"
-            className="inline-flex items-center gap-3 px-10 py-4 bg-gold text-[#2c2c2c] text-sm tracking-widest uppercase hover:bg-[#e8d5b0] transition-colors duration-300 rounded-full font-medium"
-          >
-            Đặt lịch tư vấn ngay <ArrowRight size={14} />
-          </a>
+          <Magnetic className="inline-block">
+            <a
+              href="#contact"
+              className="inline-flex items-center gap-3 px-10 py-4 bg-gold text-[#2c2c2c] text-sm tracking-widest uppercase hover:bg-[#e8d5b0] transition-colors duration-300 rounded-full font-medium shadow-[0_8px_30px_rgba(201,169,110,0.2)]"
+            >
+              Đặt lịch tư vấn ngay <ArrowRight size={14} />
+            </a>
+          </Magnetic>
         </motion.div>
       </div>
     </section>
@@ -468,6 +533,47 @@ function Collections() {
 
 // ─── STATS ───────────────────────────────────────────────────────────────────
 
+function CountUp({
+  value,
+  suffix,
+  format,
+  start,
+}: {
+  value: number;
+  suffix: string;
+  format: boolean;
+  start: boolean;
+}) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    if (!start) return;
+    let raf = 0;
+    const duration = 1800;
+    let t0: number | null = null;
+
+    const tick = (now: number) => {
+      if (t0 === null) t0 = now;
+      const p = Math.min((now - t0) / duration, 1);
+      // easeOutQuart — fast start, gentle landing
+      const eased = 1 - Math.pow(1 - p, 4);
+      setDisplay(Math.round(value * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [start, value]);
+
+  const text = format ? display.toLocaleString("vi-VN") : String(display);
+  return (
+    <span>
+      {text}
+      {suffix}
+    </span>
+  );
+}
+
 function Stats() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
@@ -484,7 +590,9 @@ function Stats() {
               transition={{ duration: 0.6, delay: i * 0.1 }}
               className="text-center px-6"
             >
-              <p className="font-heading text-4xl md:text-5xl text-gold mb-2">{stat.number}</p>
+              <p className="font-heading text-4xl md:text-5xl text-gold mb-2">
+                <CountUp value={stat.value} suffix={stat.suffix} format={stat.format} start={inView} />
+              </p>
               <p className="text-[#8c8480] text-xs tracking-widest uppercase">{stat.label}</p>
             </motion.div>
           ))}
@@ -501,7 +609,7 @@ function Testimonials() {
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section id="about" className="py-28 bg-[#2c2c2c] overflow-hidden">
+    <section id="about" className="relative py-28 bg-[#2c2c2c] overflow-hidden grain">
       <div ref={ref} className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="text-center mb-20">
           <motion.p
@@ -749,9 +857,13 @@ export default function HomePage() {
       <Hero />
       <Marquee />
       <WhyUs />
-      <HowItWorks />
       <Collections />
+      <RoomVisualizer />
+      <BeforeAfter />
+      <PriceEstimator />
+      <HowItWorks />
       <Stats />
+      <Lookbook />
       <Testimonials />
       <ContactCTA />
     </>

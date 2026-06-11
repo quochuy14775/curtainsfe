@@ -7,6 +7,8 @@ import Link from "next/link";
 import { SlidersHorizontal, ChevronDown, ArrowLeft } from "lucide-react";
 import { categories, getAllProducts } from "@/lib/data";
 import { useCartStore } from "@/lib/cart-store";
+import { WishlistButton } from "@/components/wishlist/WishlistButton";
+import { RecentlyViewed } from "@/components/sections/RecentlyViewed";
 
 const tagColor: Record<string, string> = {
   Bestseller: "bg-[#2c2c2c] text-[#fdfbf8]",
@@ -70,6 +72,11 @@ function ProductCard({
           <span className="absolute top-3 right-3 px-2.5 py-1 text-[9px] tracking-widest uppercase rounded-full bg-black/20 text-white/70 backdrop-blur-sm">
             {product.categoryTitle}
           </span>
+
+          <WishlistButton
+            productId={product.id}
+            className="absolute top-12 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          />
 
           <div
             className="absolute inset-x-0 bottom-0 py-4 bg-[#2c2c2c]/90 text-center translate-y-full group-hover:translate-y-0 transition-transform duration-300 cursor-pointer"
@@ -293,6 +300,9 @@ function ProductsContent() {
           <div className="h-px w-16 bg-gold/30" />
         </div>
       </div>
+
+      {/* Recently viewed */}
+      <RecentlyViewed />
     </>
   );
 }
