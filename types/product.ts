@@ -21,8 +21,10 @@ export type ProductResponse = {
   id: number;
   name: string;
   material: string;
-  price: number;
+  price: number | null;
   tag: string | null;
+  colorHex: string | null;
+  colorGroup: string | null;
   categoryId: number;
   categoryTitle: string | null;
   isActived: boolean;
@@ -31,8 +33,10 @@ export type ProductResponse = {
 export type ProductRequest = {
   name: string;
   material: string;
-  price: number;
+  price: number | null;
   tag?: string;
+  colorHex?: string;
+  colorGroup?: string;
   categoryId: number;
 };
 
@@ -52,7 +56,11 @@ export const TAG_STYLES: Record<string, string> = {
 // ─── Formatters ───────────────────────────────────────────────────────────────
 
 export function formatVND(price: number): string {
-  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(price);
+  return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(price);
+}
+
+export function displayPrice(price: number | null): string {
+  return price == null ? "Liên hệ" : `${formatVND(price)} ₫`;
 }
 
 export function parsePrice(raw: string): number {

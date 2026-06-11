@@ -6,7 +6,7 @@ import { Plus, Search, Pencil, Trash2 } from "lucide-react";
 import { buildODataQuery, contains } from "@/lib/odata";
 import { productService } from "@/services/productService";
 import type { ProductResponse } from "@/types/product";
-import { TAG_STYLES, formatVND } from "@/types/product";
+import { TAG_STYLES, displayPrice } from "@/types/product";
 import { ProductDialog, type ProductFormData } from "./ProductDialog";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { notify } from "@/lib/toast";
@@ -60,8 +60,10 @@ export default function ProductsPage() {
       const payload = {
         name: data.name,
         material: data.material,
-        price: parseFloat(data.price),
+        price: data.contactOnly ? null : (parseInt(data.price) || 0),
         tag: data.tag || undefined,
+        colorHex: data.colorHex || undefined,
+        colorGroup: data.colorGroup || undefined,
         categoryId: parseInt(data.categoryId),
       };
       if (selected) {
@@ -169,8 +171,11 @@ export default function ProductsPage() {
                     </td>
                     <td className="px-5 py-3.5 text-stone text-xs whitespace-nowrap">{product.categoryTitle ?? "—"}</td>
                     <td className="px-5 py-3.5 text-stone text-xs">{product.material}</td>
-                    <td className="px-5 py-3.5 text-charcoal text-sm font-medium whitespace-nowrap">
-                      {formatVND(product.price)} ₫
+                    <td className="px-5 py-3.5 text-sm font-medium whitespace-nowrap">
+                      {product.price == null
+                        ? <span className="px-2 py-0.5 rounded-full text-[9px] tracking-widest uppercase bg-gold/15 text-yellow-800">Liên hệ</span>
+                        : <span className="text-charcoal">{displayPrice(product.price)}</span>
+                      }
                     </td>
                     <td className="px-5 py-3.5">
                       {product.tag ? (
@@ -232,9 +237,12 @@ export default function ProductsPage() {
             ? {
                 name: selected.name,
                 material: selected.material,
-                price: String(selected.price),
+                price: selected.price != null ? String(selected.price) : "",
+                contactOnly: selected.price == null,
                 categoryId: String(selected.categoryId),
                 tag: selected.tag ?? "",
+                colorHex: selected.colorHex ?? "",
+                colorGroup: selected.colorGroup ?? "",
               }
             : undefined
         }
