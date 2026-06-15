@@ -3,11 +3,10 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Search, ShoppingBag, Sun, Moon, Heart } from "lucide-react";
+import { Search, ShoppingBag, Heart } from "lucide-react";
 import { useCartStore } from "@/lib/cart-store";
 import { useWishlist } from "@/lib/wishlist-store";
 import { SearchDialog } from "@/components/sections/SearchDialog";
-import { useTheme } from "@/components/providers/ThemeProvider";
 
 const links = [
   { label: "Sản phẩm", href: "/products" },
@@ -23,8 +22,6 @@ export function Navbar() {
   const wishlistIds = useWishlist((s) => s.ids);
   const openWishlist = useWishlist((s) => s.openPanel);
   const [mounted, setMounted] = useState(false);
-  const { theme, toggle } = useTheme();
-
   useEffect(() => {
     setMounted(true);
     useCartStore.persist.rehydrate();
@@ -59,14 +56,14 @@ export function Navbar() {
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           scrolled
-            ? "bg-warm-white/95 dark:bg-[#1a1917]/95 backdrop-blur-md shadow-sm border-b border-linen"
-            : "bg-transparent"
+            ? "bg-warm-white/95 backdrop-blur-md shadow-sm border-b border-linen"
+            : "bg-gradient-to-b from-black/40 to-transparent"
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-12 h-20 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="group flex flex-col leading-none">
-            <span className="font-heading text-xl font-semibold tracking-wide text-charcoal dark:text-[#ede8e1]">
+            <span className={`font-heading text-xl font-semibold tracking-wide transition-colors duration-500 ${scrolled ? "text-charcoal" : "text-[#fdfbf8]"}`}>
               Rèm màn
             </span>
             <span className="font-heading text-xs tracking-[0.3em] text-gold uppercase">
@@ -80,7 +77,9 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="relative text-sm tracking-widest uppercase text-stone hover:text-charcoal transition-colors duration-300 group"
+                className={`relative text-sm tracking-widest uppercase transition-colors duration-300 group hover:text-gold ${
+                  scrolled ? "text-stone" : "text-white/90"
+                }`}
               >
                 {link.label}
                 <span className="absolute -bottom-1 left-0 w-0 h-px bg-gold group-hover:w-full transition-all duration-300" />
@@ -93,30 +92,19 @@ export function Navbar() {
             {/* Search */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-2 text-stone hover:text-charcoal transition-colors group"
+              className={`flex items-center gap-2 transition-colors group hover:text-gold ${scrolled ? "text-stone" : "text-white/90"}`}
               aria-label="Tìm kiếm"
             >
               <Search size={16} />
-              <span className="text-xs text-stone/50 border border-linen rounded px-1.5 py-0.5 group-hover:border-stone transition-colors hidden lg:inline">
+              <span className={`text-xs border rounded px-1.5 py-0.5 transition-colors hidden lg:inline ${scrolled ? "text-stone/50 border-linen group-hover:border-stone" : "text-white/40 border-white/20 group-hover:border-white/50"}`}>
                 ⌘K
               </span>
             </button>
 
-            {/* Theme toggle */}
-            {mounted && (
-              <button
-                onClick={toggle}
-                className="text-stone hover:text-charcoal transition-colors"
-                aria-label={theme === "dark" ? "Chế độ sáng" : "Chế độ tối"}
-              >
-                {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-              </button>
-            )}
-
             {/* Wishlist */}
             <button
               onClick={openWishlist}
-              className="relative text-stone hover:text-charcoal transition-colors"
+              className={`relative transition-colors hover:text-gold ${scrolled ? "text-stone" : "text-white/90"}`}
               aria-label="Yêu thích"
             >
               <Heart size={17} className={wishCount > 0 ? "fill-gold text-gold" : ""} />
@@ -130,7 +118,7 @@ export function Navbar() {
             {/* Cart */}
             <button
               onClick={openCart}
-              className="relative text-stone hover:text-charcoal transition-colors"
+              className={`relative transition-colors hover:text-gold ${scrolled ? "text-stone" : "text-white/90"}`}
               aria-label="Giỏ hàng"
             >
               <ShoppingBag size={18} />
@@ -156,23 +144,14 @@ export function Navbar() {
           <div className="md:hidden flex items-center gap-3">
             <button
               onClick={() => setSearchOpen(true)}
-              className="text-stone hover:text-charcoal transition-colors"
+              className={`transition-colors hover:text-gold ${scrolled ? "text-stone" : "text-white/90"}`}
               aria-label="Tìm kiếm"
             >
               <Search size={18} />
             </button>
-            {mounted && (
-              <button
-                onClick={toggle}
-                className="text-stone hover:text-charcoal transition-colors"
-                aria-label={theme === "dark" ? "Chế độ sáng" : "Chế độ tối"}
-              >
-                {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-              </button>
-            )}
             <button
               onClick={openCart}
-              className="relative text-stone hover:text-charcoal transition-colors"
+              className={`relative transition-colors hover:text-gold ${scrolled ? "text-stone" : "text-white/90"}`}
               aria-label="Giỏ hàng"
             >
               <ShoppingBag size={18} />
@@ -192,15 +171,15 @@ export function Navbar() {
             >
               <motion.span
                 animate={menuOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
-                className="block w-6 h-px bg-charcoal origin-center"
+                className={`block w-6 h-px origin-center transition-colors duration-500 ${scrolled ? "bg-charcoal" : "bg-white"}`}
               />
               <motion.span
                 animate={menuOpen ? { opacity: 0 } : { opacity: 1 }}
-                className="block w-6 h-px bg-charcoal"
+                className={`block w-6 h-px transition-colors duration-500 ${scrolled ? "bg-charcoal" : "bg-white"}`}
               />
               <motion.span
                 animate={menuOpen ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }}
-                className="block w-6 h-px bg-charcoal origin-center"
+                className={`block w-6 h-px origin-center transition-colors duration-500 ${scrolled ? "bg-charcoal" : "bg-white"}`}
               />
             </button>
           </div>
@@ -215,7 +194,7 @@ export function Navbar() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-0 z-40 bg-warm-white dark:bg-[#1a1917] flex flex-col items-center justify-center gap-8"
+            className="fixed inset-0 z-40 bg-warm-white flex flex-col items-center justify-center gap-8"
           >
             {links.map((link, i) => (
               <motion.div

@@ -3,19 +3,22 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MoreHorizontal } from "lucide-react";
-import type { Order, OrderStatus } from "@/lib/mock-admin";
-import { STATUS_LABEL } from "@/lib/mock-admin";
+import type { AppointmentResponse } from "@/types/appointment";
+import { NEXT_STATUS, STATUS_LABEL } from "@/types/appointment";
 
-const NEXT_STATUS: Partial<Record<OrderStatus, OrderStatus>> = {
-  pending: "contacted",
-  contacted: "confirmed",
-  confirmed: "done",
-};
+interface OrderActionsProps {
+  appointment: AppointmentResponse;
+  onAdvance: () => void;
+  onEdit: () => void;
+  onCancel: () => void;
+  onDelete: () => void;
+}
 
-export function OrderActions({ order }: { order: Order }) {
+export function OrderActions({ appointment, onAdvance, onEdit, onCancel, onDelete }: OrderActionsProps) {
   const [open, setOpen] = useState(false);
 
-  const next = NEXT_STATUS[order.status];
+  const next = NEXT_STATUS[appointment.status];
+  const pick = (action: () => void) => () => { setOpen(false); action(); };
 
   return (
     <div className="relative">
@@ -39,32 +42,41 @@ export function OrderActions({ order }: { order: Order }) {
             >
               {next && (
                 <button
-                  onClick={() => { setOpen(false); alert(`[Mock] Cập nhật "${order.id}" → ${STATUS_LABEL[next]}`); }}
+                  onClick={pick(onAdvance)}
                   className="w-full text-left px-4 py-2.5 text-xs text-charcoal hover:bg-cream transition-colors"
                 >
                   → {STATUS_LABEL[next]}
                 </button>
               )}
               <button
-                onClick={() => { setOpen(false); alert(`[Mock] Gọi ${order.phone}`); }}
+                onClick={pick(onEdit)}
                 className="w-full text-left px-4 py-2.5 text-xs text-charcoal hover:bg-cream transition-colors"
               >
-                Gọi điện
+                Chỉnh sửa
               </button>
-              {order.email && (
-                <button
-                  onClick={() => { setOpen(false); window.open(`mailto:${order.email}`); }}
-                  className="w-full text-left px-4 py-2.5 text-xs text-charcoal hover:bg-cream transition-colors"
+              {appointment.phone && (
+                <a
+                  href={`tel:${appointment.phone}`}
+                  onClick={() => setOpen(false)}
+                  className="block w-full text-left px-4 py-2.5 text-xs text-charcoal hover:bg-cream transition-colors"
                 >
-                  Gửi email
-                </button>
+                  Gọi điện
+                </a>
               )}
               <hr className="my-1 border-linen" />
+              {appointment.status !== "Cancelled" && appointment.status !== "Completed" && (
+                <button
+                  onClick={pick(onCancel)}
+                  className="w-full text-left px-4 py-2.5 text-xs text-red-500 hover:bg-red-50 transition-colors"
+                >
+                  Huỷ đơn
+                </button>
+              )}
               <button
-                onClick={() => { setOpen(false); alert(`[Mock] Huỷ "${order.id}"`); }}
+                onClick={pick(onDelete)}
                 className="w-full text-left px-4 py-2.5 text-xs text-red-500 hover:bg-red-50 transition-colors"
               >
-                Huỷ đơn
+                Xóa đơn
               </button>
             </motion.div>
           </>

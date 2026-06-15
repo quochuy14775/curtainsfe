@@ -1,26 +1,62 @@
-import { getDashboardStats, getOrders, STATUS_LABEL, STATUS_COLOR, CATEGORY_LABEL, formatDate } from "@/lib/mock-admin";
-import { TrendingUp, Clock, PhoneCall, CheckCircle, XCircle, BadgeCheck } from "lucide-react";
+"use client";
 
-export default async function DashboardPage() {
-  const [stats, orders] = await Promise.all([getDashboardStats(), getOrders()]);
-  const recent = orders.slice(0, 5);
-  const maxCategory = Math.max(...stats.categoryBreakdown.map((c) => c.count));
+import { useEffect, useState } from "react";
+import { TrendingUp, Clock, BadgeCheck, CheckCircle, XCircle, Users, CalendarClock } from "lucide-react";
+import { appointmentService } from "@/services/appointmentService";
+import type { AppointmentStats } from "@/types/appointment";
+import { STATUS_LABEL, STATUS_COLOR, formatDateTime } from "@/types/appointment";
+import { notify } from "@/lib/toast";
+
+export default function DashboardPage() {
+  const [stats, setStats] = useState<AppointmentStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    appointmentService.getStats()
+      .then((res) => { if (alive) setStats(res); })
+      .catch(() => { if (alive) notify.error("Không thể tải thống kê."); })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, []);
+
+  const today = new Date().toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+
+  if (loading) {
+    return <div className="py-16 text-center text-stone/40 text-sm">Đang tải...</div>;
+  }
+
+  if (!stats) {
+    return <div className="py-16 text-center text-stone/40 text-sm">Không có dữ liệu.</div>;
+  }
 
   const cards = [
-    { label: "Tổng đơn", value: stats.totalOrders, icon: TrendingUp, color: "bg-blue-50 text-blue-600" },
+    { label: "Tổng đơn", value: stats.total, icon: TrendingUp, color: "bg-blue-50 text-blue-600" },
     { label: "Chờ xử lý", value: stats.pending, icon: Clock, color: "bg-amber-50 text-amber-600" },
-    { label: "Đang liên hệ", value: stats.contacted, icon: PhoneCall, color: "bg-purple-50 text-purple-600" },
-    { label: "Đã xác nhận", value: stats.confirmed, icon: BadgeCheck, color: "bg-indigo-50 text-indigo-600" },
-    { label: "Hoàn thành tháng này", value: stats.doneThisMonth, icon: CheckCircle, color: "bg-emerald-50 text-emerald-600" },
+    { label: "Đã xác nhận", value: stats.confirmed, icon: BadgeCheck, color: "bg-purple-50 text-purple-600" },
+    { label: "Hoàn thành tháng này", value: stats.completedThisMonth, icon: CheckCircle, color: "bg-emerald-50 text-emerald-600" },
     { label: "Đã huỷ", value: stats.cancelled, icon: XCircle, color: "bg-red-50 text-red-500" },
+    { label: "Khách hàng", value: stats.totalCustomers, icon: Users, color: "bg-gold/15 text-gold" },
   ];
+
+  const breakdown = [
+    { label: STATUS_LABEL.Pending, count: stats.pending },
+    { label: STATUS_LABEL.Confirmed, count: stats.confirmed },
+    { label: STATUS_LABEL.Completed, count: stats.completed },
+    { label: STATUS_LABEL.Cancelled, count: stats.cancelled },
+  ];
+  const maxCount = Math.max(1, ...breakdown.map((b) => b.count));
 
   return (
     <div className="space-y-8 max-w-5xl">
       {/* Header */}
       <div>
         <h1 className="font-heading text-2xl text-charcoal">Tổng quan</h1>
-        <p className="text-stone text-sm mt-1">Hôm nay, 05/06/2026</p>
+        <p className="text-stone text-sm mt-1">Hôm nay, {today}</p>
       </div>
 
       {/* KPI cards */}
@@ -36,14 +72,14 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      {/* Category breakdown + Top staff */}
+      {/* Status breakdown + Upcoming */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-        {/* Category breakdown */}
+        {/* Status breakdown */}
         <div className="bg-warm-white rounded-2xl p-6 shadow-sm">
-          <h2 className="font-heading text-base text-charcoal mb-5">Phân bổ theo loại rèm</h2>
+          <h2 className="font-heading text-base text-charcoal mb-5">Phân bổ trạng thái</h2>
           <div className="space-y-3.5">
-            {stats.categoryBreakdown.map(({ label, count }) => (
+            {breakdown.map(({ label, count }) => (
               <div key={label}>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs text-stone">{label}</span>
@@ -52,7 +88,7 @@ export default async function DashboardPage() {
                 <div className="h-1.5 bg-linen rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gold rounded-full transition-all duration-500"
-                    style={{ width: `${(count / maxCategory) * 100}%` }}
+                    style={{ width: `${(count / maxCount) * 100}%` }}
                   />
                 </div>
               </div>
@@ -60,23 +96,32 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Top staff + completion rate */}
+        {/* Upcoming appointments + completion rate */}
         <div className="space-y-4">
           <div className="bg-warm-white rounded-2xl p-6 shadow-sm">
-            <h2 className="font-heading text-base text-charcoal mb-5">Nhân viên xử lý</h2>
-            <div className="space-y-3">
-              {stats.topStaff.map(({ name, count }) => (
-                <div key={name} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-gold/15 flex items-center justify-center text-xs font-medium text-gold">
-                      {name[0]}
+            <h2 className="font-heading text-base text-charcoal mb-5">Lịch hẹn sắp tới</h2>
+            {stats.upcoming.length === 0 ? (
+              <p className="text-stone/40 text-xs italic">Chưa có lịch hẹn nào</p>
+            ) : (
+              <div className="space-y-3">
+                {stats.upcoming.map((a) => (
+                  <div key={a.id} className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-7 h-7 rounded-full bg-gold/15 flex items-center justify-center shrink-0">
+                        <CalendarClock size={13} className="text-gold" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm text-charcoal truncate">{a.customerName}</p>
+                        <p className="text-stone text-xs">{a.phone}</p>
+                      </div>
                     </div>
-                    <span className="text-sm text-charcoal">{name}</span>
+                    <span className="text-xs font-medium text-stone whitespace-nowrap">
+                      {a.scheduledAt ? formatDateTime(a.scheduledAt) : "—"}
+                    </span>
                   </div>
-                  <span className="text-xs font-medium text-stone">{count} đơn</span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="bg-charcoal rounded-2xl p-6 shadow-sm flex items-center justify-between">
@@ -91,7 +136,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Recent orders */}
+      {/* Recent appointments */}
       <div className="bg-warm-white rounded-2xl shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-linen flex items-center justify-between">
           <h2 className="font-heading text-base text-charcoal">Đơn mới nhất</h2>
@@ -104,33 +149,36 @@ export default async function DashboardPage() {
             <thead>
               <tr className="border-b border-linen">
                 <th className="px-6 py-3 text-left text-[10px] tracking-widest uppercase text-stone font-normal">Khách</th>
-                <th className="px-6 py-3 text-left text-[10px] tracking-widest uppercase text-stone font-normal hidden sm:table-cell">Loại rèm</th>
+                <th className="px-6 py-3 text-left text-[10px] tracking-widest uppercase text-stone font-normal hidden sm:table-cell">Ghi chú</th>
                 <th className="px-6 py-3 text-left text-[10px] tracking-widest uppercase text-stone font-normal">Trạng thái</th>
                 <th className="px-6 py-3 text-left text-[10px] tracking-widest uppercase text-stone font-normal hidden md:table-cell">Thời gian</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-linen">
-              {recent.map((order) => (
-                <tr key={order.id} className="hover:bg-cream/60 transition-colors">
+              {stats.recent.map((a) => (
+                <tr key={a.id} className="hover:bg-cream/60 transition-colors">
                   <td className="px-6 py-4">
-                    <p className="text-charcoal font-medium">{order.name}</p>
-                    <p className="text-stone text-xs">{order.phone}</p>
+                    <p className="text-charcoal font-medium">{a.customerName}</p>
+                    <p className="text-stone text-xs">{a.phone}</p>
                   </td>
-                  <td className="px-6 py-4 text-stone text-xs hidden sm:table-cell">
-                    {CATEGORY_LABEL[order.category] ?? order.category}
+                  <td className="px-6 py-4 text-stone text-xs hidden sm:table-cell max-w-[260px]">
+                    <p className="line-clamp-1">{a.note || <span className="italic text-stone/40">Không có</span>}</p>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-medium ${STATUS_COLOR[order.status]}`}>
-                      {STATUS_LABEL[order.status]}
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-medium ${STATUS_COLOR[a.status]}`}>
+                      {STATUS_LABEL[a.status]}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-stone text-xs hidden md:table-cell">
-                    {formatDate(order.createdAt)}
+                    {formatDateTime(a.createdAt)}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          {stats.recent.length === 0 && (
+            <div className="py-12 text-center text-stone/40 text-sm">Chưa có đơn tư vấn nào</div>
+          )}
         </div>
       </div>
     </div>

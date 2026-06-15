@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { X, MapPin, ArrowLeft, ArrowRight } from "lucide-react";
+import Image from "next/image";
 
-// Mock công trình thực tế — thay bằng ảnh thật từ BE sau
 const PROJECTS = [
   {
     id: 1,
@@ -12,8 +12,7 @@ const PROJECTS = [
     location: "Bình Thạnh, TP.HCM",
     type: "Rèm lụa tơ tằm Ý",
     tall: true,
-    palette: ["#6b2d3e", "#3a2530", "#1e1a16"],
-    accent: "#d4a0a0",
+    image: "/completed/z7937815952988_6f4fd478549d9e7019d31b6eb4090dca.jpg",
   },
   {
     id: 2,
@@ -21,8 +20,7 @@ const PROJECTS = [
     location: "Quận 2, TP.HCM",
     type: "Rèm nhung Bỉ + voile",
     tall: false,
-    palette: ["#4a6741", "#2e4228", "#1a2616"],
-    accent: "#a8c69a",
+    image: "/completed/z7937815991273_98dd527c3935b18c567732bfce28e83a.jpg",
   },
   {
     id: 3,
@@ -30,8 +28,7 @@ const PROJECTS = [
     location: "Quận 1, TP.HCM",
     type: "Rèm cầu vồng Hàn Quốc",
     tall: false,
-    palette: ["#8b7040", "#5e4a28", "#352a16"],
-    accent: "#e8d5b0",
+    image: "/completed/z7937815988483_bf826289676ecd0fc725ef3f762c77ff.jpg",
   },
   {
     id: 4,
@@ -39,8 +36,7 @@ const PROJECTS = [
     location: "Quận 1, TP.HCM",
     type: "Rèm cuốn cao cấp",
     tall: true,
-    palette: ["#2d6e6e", "#1d4a4a", "#102c2c"],
-    accent: "#8fd0d0",
+    image: "/completed/z7937815978578_e105a5f634c8939f0066b586bccab450.jpg",
   },
   {
     id: 5,
@@ -48,8 +44,7 @@ const PROJECTS = [
     location: "Quận 7, TP.HCM",
     type: "Rèm gấm dệt thủ công",
     tall: false,
-    palette: ["#1e2d5a", "#15203f", "#0c1224"],
-    accent: "#9ab0e0",
+    image: "/completed/z7937815965442_555d9226c43b72fc78a8503353eabdca.jpg",
   },
   {
     id: 6,
@@ -57,42 +52,19 @@ const PROJECTS = [
     location: "Đà Lạt, Lâm Đồng",
     type: "Rèm len pha + blackout",
     tall: false,
-    palette: ["#b5522a", "#7d3a1e", "#451f0f"],
-    accent: "#f0b896",
+    image: "/completed/z7937815974450_134e0e718613435b77fbf34dce24147f.jpg",
+  },
+  {
+    id: 7,
+    title: "Căn hộ Vinhomes Grand Park",
+    location: "Quận 9, TP.HCM",
+    type: "Rèm vải cao cấp",
+    tall: false,
+    image: "/completed/z7937815956205_747fbdbae545371481e419e0bb1f8744.jpg",
   },
 ];
 
 type Project = (typeof PROJECTS)[number];
-
-// CSS-drawn "ảnh công trình" — gradient giả lập không gian nội thất
-function ProjectVisual({ p, large = false }: { p: Project; large?: boolean }) {
-  return (
-    <div className="absolute inset-0">
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(160deg, ${p.palette[0]} 0%, ${p.palette[1]} 55%, ${p.palette[2]} 100%)`,
-        }}
-      />
-      {/* Pleats */}
-      <div
-        className="absolute inset-0 opacity-25"
-        style={{
-          backgroundImage: `repeating-linear-gradient(90deg, transparent 0px, transparent ${large ? 26 : 16}px, rgba(255,255,255,0.16) ${large ? 26 : 16}px, rgba(255,255,255,0.16) ${large ? 28 : 17}px)`,
-        }}
-      />
-      {/* Window light */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `radial-gradient(ellipse 60% 75% at 72% 30%, ${p.accent}33 0%, transparent 65%)`,
-        }}
-      />
-      {/* Floor shadow */}
-      <div className="absolute bottom-0 inset-x-0 h-1/4 bg-gradient-to-t from-black/45 to-transparent" />
-    </div>
-  );
-}
 
 export function Lookbook() {
   const ref = useRef<HTMLDivElement>(null);
@@ -164,12 +136,10 @@ export function Lookbook() {
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.7, delay: 0.1 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
               onClick={() => setActiveIdx(i)}
-              className={`relative w-full mb-5 break-inside-avoid overflow-hidden rounded-2xl group cursor-zoom-in text-left ${
-                p.tall ? "aspect-[3/4]" : "aspect-[4/3]"
-              }`}
+              className="relative w-full mb-5 break-inside-avoid overflow-hidden rounded-2xl group cursor-zoom-in text-left"
             >
-              <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
-                <ProjectVisual p={p} />
+              <div className="transition-transform duration-700 group-hover:scale-105">
+                <Image src={p.image} alt={p.title} width={0} height={0} sizes="(max-width:768px) 50vw, 33vw" className="w-full h-auto block" />
               </div>
 
               {/* Hover overlay */}
@@ -177,10 +147,7 @@ export function Lookbook() {
 
               {/* Info */}
               <div className="absolute inset-x-0 bottom-0 p-6 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                <p
-                  className="text-[10px] tracking-widest uppercase mb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  style={{ color: p.accent }}
-                >
+                <p className="text-[10px] tracking-widest uppercase mb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-gold">
                   {p.type}
                 </p>
                 <h3 className="font-heading text-xl text-white leading-tight drop-shadow">
@@ -214,14 +181,14 @@ export function Lookbook() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 16 }}
               transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed inset-0 z-[71] m-auto w-[min(92vw,960px)] h-[min(82vh,640px)] rounded-2xl overflow-hidden pointer-events-none"
+              className="fixed z-[71] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl overflow-hidden pointer-events-none"
             >
-              <div className="relative w-full h-full pointer-events-auto">
-                <ProjectVisual p={active} large />
+              <div className="relative w-full pointer-events-auto">
+                <Image src={active.image} alt={active.title} width={0} height={0} sizes="90vw" className="max-w-[90vw] max-h-[90vh] w-auto h-auto block" />
 
                 {/* Caption */}
                 <div className="absolute inset-x-0 bottom-0 p-8 bg-gradient-to-t from-black/70 to-transparent">
-                  <p className="text-[10px] tracking-widest uppercase mb-2" style={{ color: active.accent }}>
+                  <p className="text-[10px] tracking-widest uppercase mb-2 text-gold">
                     {active.type}
                   </p>
                   <h3 className="font-heading text-3xl text-white">{active.title}</h3>

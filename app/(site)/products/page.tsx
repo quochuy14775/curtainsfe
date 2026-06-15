@@ -1,10 +1,10 @@
 "use client";
 
-import { Suspense, useState, useRef } from "react";
+import { Suspense, useState, useRef, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { SlidersHorizontal, ChevronDown, ArrowLeft } from "lucide-react";
+import { SlidersHorizontal, ChevronDown, ArrowLeft, ShoppingBag, Check } from "lucide-react";
 import { categories, getAllProducts } from "@/lib/data";
 import { useCartStore } from "@/lib/cart-store";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
@@ -24,6 +24,100 @@ const SORT_OPTIONS = [
   { value: "price-desc", label: "Giá giảm dần" },
 ];
 
+const ALL_TAGS = ["Bestseller", "Mới", "Limited", "Hot", "Smart"];
+
+// ─── MULTI-SELECT DROPDOWN ─────────────────────────────────────────────────────
+
+function MultiDropdown({
+  label,
+  options,
+  selected,
+  onToggle,
+  onClear,
+}: {
+  label: string;
+  options: { value: string; label: string }[];
+  selected: string[];
+  onToggle: (v: string) => void;
+  onClear: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const hasSelected = selected.length > 0;
+
+  return (
+    <div ref={ref} className="relative shrink-0">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className={`flex items-center gap-2 px-4 py-1.5 border rounded-full text-xs tracking-widest uppercase transition-colors duration-200 ${
+          hasSelected
+            ? "border-charcoal bg-charcoal text-warm-white"
+            : "border-[#e8e0d5] text-[#8c8480] hover:border-[#2c2c2c] hover:text-[#2c2c2c]"
+        }`}
+      >
+        {label}
+        {hasSelected && (
+          <span className="w-4 h-4 rounded-full bg-gold text-charcoal text-[9px] flex items-center justify-center font-bold leading-none">
+            {selected.length}
+          </span>
+        )}
+        <ChevronDown size={11} className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scaleY: 0.95 }}
+            animate={{ opacity: 1, y: 0, scaleY: 1 }}
+            exit={{ opacity: 0, y: -6, scaleY: 0.95 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            style={{ transformOrigin: "top" }}
+            className="absolute left-0 top-full mt-1 z-20 bg-[#fdfbf8] border border-[#e8e0d5] rounded-xl shadow-lg overflow-hidden min-w-[180px]"
+          >
+            {options.map((opt) => {
+              const active = selected.includes(opt.value);
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => onToggle(opt.value)}
+                  className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors duration-150 ${
+                    active ? "text-gold bg-gold/5" : "text-[#2c2c2c] hover:bg-[#f8f5f0] hover:text-gold"
+                  }`}
+                >
+                  <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors duration-150 ${active ? "bg-gold border-gold" : "border-[#d4cdc8]"}`}>
+                    {active && <Check size={10} strokeWidth={3} className="text-charcoal" />}
+                  </span>
+                  {opt.label}
+                </button>
+              );
+            })}
+            {hasSelected && (
+              <>
+                <div className="h-px bg-[#e8e0d5] mx-3" />
+                <button
+                  onClick={() => { onClear(); setOpen(false); }}
+                  className="w-full text-left px-4 py-2.5 text-xs tracking-widest uppercase text-[#8c8480] hover:text-red-400 transition-colors duration-150"
+                >
+                  Bỏ chọn tất cả
+                </button>
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 function parsePrice(price: string) {
   return Number(price.replace(/\./g, ""));
 }
@@ -38,6 +132,14 @@ function ProductCard({
   index: number;
 }) {
   const { addItem } = useCartStore();
+  const [added, setAdded] = useState(false);
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    addItem(product);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
+  };
 
   return (
     <motion.div
@@ -78,15 +180,24 @@ function ProductCard({
             className="absolute top-12 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           />
 
-          <div
-            className="absolute inset-x-0 bottom-0 py-4 bg-[#2c2c2c]/90 text-center translate-y-full group-hover:translate-y-0 transition-transform duration-300 cursor-pointer"
-            onClick={(e) => {
-              e.preventDefault();
-              addItem(product);
-            }}
+          <motion.button
+            whileTap={{ scale: 0.85 }}
+            onClick={handleAddToCart}
+            className={`absolute bottom-3 right-3 w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-sm transition-colors duration-300 opacity-0 group-hover:opacity-100 ${
+              added ? "bg-gold text-charcoal" : "bg-black/20 text-white/80 hover:bg-black/35 hover:text-white"
+            }`}
+            aria-label="Thêm vào giỏ hàng"
           >
-            <span className="text-[#fdfbf8] text-[10px] tracking-[0.3em] uppercase">Thêm vào giỏ</span>
-          </div>
+            <motion.span
+              key={added ? "added" : "idle"}
+              initial={{ scale: 0.6 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 400, damping: 18 }}
+              className="flex"
+            >
+              {added ? <Check size={15} strokeWidth={2.5} /> : <ShoppingBag size={15} strokeWidth={1.75} />}
+            </motion.span>
+          </motion.button>
         </div>
       </Link>
 
@@ -121,28 +232,35 @@ function ProductsContent() {
   const sortRef = useRef<HTMLDivElement>(null);
   const [sortOpen, setSortOpen] = useState(false);
   const [sort, setSort] = useState("default");
-  const [activeCategory, setActiveCategory] = useState<string | null>(
-    searchParams.get("category")
-  );
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
+    const cat = searchParams.get("category");
+    return cat ? [cat] : [];
+  });
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  const handleCategoryChange = (categoryId: string | null) => {
-    setActiveCategory(categoryId);
-    const url = categoryId ? `/products?category=${categoryId}` : "/products";
-    router.replace(url, { scroll: false });
-  };
+  const toggleCategory = (id: string) =>
+    setSelectedCategories((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
+    );
+  const toggleTag = (tag: string) =>
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
 
   const allProducts = getAllProducts();
-  let filtered = activeCategory
-    ? allProducts.filter((p) => p.categoryId === activeCategory)
-    : allProducts;
-
+  let filtered = allProducts;
+  if (selectedCategories.length > 0)
+    filtered = filtered.filter((p) => selectedCategories.includes(p.categoryId));
+  if (selectedTags.length > 0)
+    filtered = filtered.filter((p) => p.tag && selectedTags.includes(p.tag));
   if (sort === "price-asc")
     filtered = [...filtered].sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
   if (sort === "price-desc")
     filtered = [...filtered].sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
 
-  const activeCat = categories.find((c) => c.id === activeCategory);
   const sortLabel = SORT_OPTIONS.find((o) => o.value === sort)?.label ?? "Mặc định";
+  const categoryOptions = categories.map((c) => ({ value: c.id, label: c.title }));
+  const tagOptions = ALL_TAGS.map((t) => ({ value: t, label: t }));
 
   return (
     <>
@@ -163,7 +281,7 @@ function ProductsContent() {
             transition={{ duration: 0.6 }}
             className="text-gold text-[10px] tracking-[0.5em] uppercase mb-4"
           >
-            {activeCat ? activeCat.subtitle : "Khám phá"}
+            Khám phá
           </motion.p>
 
           <motion.h1
@@ -172,43 +290,32 @@ function ProductsContent() {
             transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="font-heading text-4xl md:text-6xl text-[#fdfbf8] leading-tight"
           >
-            {activeCat ? activeCat.title : "Bộ Sưu Tập"}
+            Bộ Sưu Tập
             <br />
-            <em className="text-gold not-italic">
-              {activeCat ? activeCat.count : `${allProducts.length} sản phẩm`}
-            </em>
+            <em className="text-gold not-italic">{allProducts.length} sản phẩm</em>
           </motion.h1>
         </div>
       </div>
 
       {/* STICKY FILTER BAR */}
       <div className="sticky top-20 z-30 bg-[#fdfbf8]/95 backdrop-blur-md border-b border-[#e8e0d5]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-3 flex items-center justify-between gap-4">
-          {/* Category pills */}
-          <div className="flex gap-2 overflow-x-auto scrollbar-none flex-1 min-w-0">
-            <button
-              onClick={() => handleCategoryChange(null)}
-              className={`shrink-0 px-4 py-1.5 rounded-full text-xs tracking-widest uppercase transition-all duration-200 ${
-                activeCategory === null
-                  ? "bg-[#2c2c2c] text-[#fdfbf8]"
-                  : "border border-[#e8e0d5] text-[#8c8480] hover:border-[#2c2c2c] hover:text-[#2c2c2c]"
-              }`}
-            >
-              Tất cả
-            </button>
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => handleCategoryChange(cat.id)}
-                className={`shrink-0 px-4 py-1.5 rounded-full text-xs tracking-widest uppercase transition-all duration-200 ${
-                  activeCategory === cat.id
-                    ? "bg-[#2c2c2c] text-[#fdfbf8]"
-                    : "border border-[#e8e0d5] text-[#8c8480] hover:border-[#2c2c2c] hover:text-[#2c2c2c]"
-                }`}
-              >
-                {cat.title}
-              </button>
-            ))}
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-3 flex items-center justify-between gap-3">
+          {/* Dropdowns */}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <MultiDropdown
+              label="Danh mục"
+              options={categoryOptions}
+              selected={selectedCategories}
+              onToggle={toggleCategory}
+              onClear={() => setSelectedCategories([])}
+            />
+            <MultiDropdown
+              label="Tag"
+              options={tagOptions}
+              selected={selectedTags}
+              onToggle={toggleTag}
+              onClear={() => setSelectedTags([])}
+            />
           </div>
 
           {/* Count + Sort */}
@@ -268,7 +375,7 @@ function ProductsContent() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12 lg:py-16">
           <AnimatePresence mode="wait">
             <motion.div
-              key={`${activeCategory ?? "all"}-${sort}`}
+              key={`${selectedCategories.join(",")}-${selectedTags.join(",")}-${sort}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -285,7 +392,7 @@ function ProductsContent() {
             <div className="flex flex-col items-center justify-center py-32 gap-4">
               <p className="font-heading text-2xl text-[#2c2c2c]">Không có sản phẩm</p>
               <button
-                onClick={() => handleCategoryChange(null)}
+                onClick={() => { setSelectedCategories([]); setSelectedTags([]); }}
                 className="text-xs tracking-widest uppercase text-gold hover:text-[#2c2c2c] transition-colors"
               >
                 Xem tất cả →

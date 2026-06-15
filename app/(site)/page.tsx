@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { motion, useInView, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { gsap } from "gsap";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Ruler,
@@ -14,10 +15,10 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { categories } from "@/lib/data";
+import { appointmentService } from "@/services/appointmentService";
 import { Magnetic } from "@/components/ui/Magnetic";
-import { RoomVisualizer } from "@/components/sections/RoomVisualizer";
+import { FabricAtelier } from "@/components/sections/FabricAtelier";
 import { PriceEstimator } from "@/components/sections/PriceEstimator";
-import { BeforeAfter } from "@/components/sections/BeforeAfter";
 import { Lookbook } from "@/components/sections/Lookbook";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
@@ -66,7 +67,7 @@ const STEPS = [
 const STATS = [
   { value: 2400, suffix: "+", format: true, label: "Không gian đã hoàn thiện" },
   { value: 98, suffix: "%", format: false, label: "Khách hàng hài lòng" },
-  { value: 15, suffix: "+", format: false, label: "Năm kinh nghiệm" },
+  { value: 25, suffix: "+", format: false, label: "Năm kinh nghiệm" },
   { value: 80, suffix: "+", format: false, label: "Chất liệu độc quyền" },
 ];
 
@@ -96,16 +97,11 @@ const TESTIMONIALS = [
 
 // ─── HERO ────────────────────────────────────────────────────────────────────
 
-// Deterministic particle layout — same values on server & client (no hydration drift)
-const GOLD_DUST = [
-  { left: "8%", top: "70%", size: 3, duration: "13s", delay: "0s", drift: "28px", opacity: 0.45 },
-  { left: "18%", top: "55%", size: 2, duration: "17s", delay: "2.5s", drift: "-20px", opacity: 0.35 },
-  { left: "31%", top: "78%", size: 4, duration: "15s", delay: "5s", drift: "16px", opacity: 0.5 },
-  { left: "47%", top: "64%", size: 2, duration: "19s", delay: "1s", drift: "-30px", opacity: 0.3 },
-  { left: "58%", top: "82%", size: 3, duration: "14s", delay: "7s", drift: "24px", opacity: 0.45 },
-  { left: "69%", top: "58%", size: 2, duration: "16s", delay: "3.5s", drift: "-14px", opacity: 0.35 },
-  { left: "81%", top: "72%", size: 4, duration: "18s", delay: "6s", drift: "20px", opacity: 0.5 },
-  { left: "91%", top: "62%", size: 2, duration: "15s", delay: "0.5s", drift: "-26px", opacity: 0.3 },
+const HERO_SLIDES = [
+  "/previews/rem-cua-pk-02-decox-design.jpg",
+  "/previews/Mau-rem-cua-so-hien-dai-sang-trong-cho-phong-ngu-master_1750391206.jpg",
+  "/previews/manh-cau-vong.png",
+    "/previews/venetianblinds02-5117.jpg"
 ];
 
 // Line-by-line editorial reveal for the hero heading
@@ -119,7 +115,7 @@ function RevealLine({
   className?: string;
 }) {
   return (
-    <span className="block overflow-hidden">
+    <span className="block overflow-hidden pb-[0.15em] pt-[0.05em]">
       <motion.span
         className={`block ${className}`}
         initial={{ y: "110%" }}
@@ -137,9 +133,18 @@ function Hero() {
   const curtainR = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const overlay = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const [current, setCurrent] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+  const scrollScale = useTransform(scrollYProgress, [0, 1], [1, 1.25]);
+
+  // Curtain open animation on mount
   useEffect(() => {
-    // Reset về trạng thái ban đầu rõ ràng — quan trọng khi navigate back
     gsap.set([curtainL.current, curtainR.current], { scaleX: 1 });
     gsap.set(overlay.current, { opacity: 1 });
     gsap.set(content.current, { opacity: 0, y: 50 });
@@ -153,56 +158,53 @@ function Hero() {
       .to(overlay.current, { opacity: 0, duration: 0.5, ease: "power2.out" }, "-=0.7")
       .to(content.current, { opacity: 1, y: 0, duration: 1, ease: "power3.out" }, "-=0.5");
 
-    return () => {
-      tl.kill();
-    };
+    return () => { tl.kill(); };
   }, []);
 
+  // Auto-advance slides
+  useEffect(() => {
+    timerRef.current = setTimeout(
+      () => setCurrent((c) => (c + 1) % HERO_SLIDES.length),
+      6000
+    );
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [current]);
+
   return (
-    <section className="relative h-screen min-h-[700px] overflow-hidden grain">
-      <div
-        className="absolute inset-0"
-        style={{ background: "linear-gradient(150deg,#3a3028 0%,#2c2420 40%,#1e1a16 100%)" }}
-      />
-      <div
-        className="absolute inset-0 opacity-15"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(201,169,110,0.12) 2px,rgba(201,169,110,0.12) 3px)",
-        }}
-      />
-      <div
-        className="absolute inset-0 opacity-20"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 50% at 50% 60%,rgba(201,169,110,0.25) 0%,transparent 70%)",
-        }}
-      />
+    <section ref={sectionRef} className="relative h-screen min-h-[700px] overflow-hidden grain">
+      {/* ── Background image slideshow ── */}
+      <motion.div className="absolute inset-0 z-0" style={{ scale: scrollScale }}>
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={current}
+            className="absolute inset-0"
+            initial={{ scale: 1.07, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.97, opacity: 0 }}
+            transition={{ duration: 1.2, ease: [0.32, 0, 0.2, 1] }}
+          >
+            <Image
+              src={HERO_SLIDES[current]}
+              alt=""
+              fill
+              priority={current === 0}
+              quality={90}
+              sizes="100vw"
+              className="object-cover"
+            />
+          </motion.div>
+        </AnimatePresence>
+        <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.35)" }} />
+      </motion.div>
+
+
       {/* Cinematic vignette */}
-      <div className="absolute inset-0 hero-vignette pointer-events-none" />
+      <div className="absolute inset-0 hero-vignette pointer-events-none z-[2]" />
 
-      {/* Floating gold dust */}
-      <div className="absolute inset-0 z-[5] pointer-events-none" aria-hidden>
-        {GOLD_DUST.map((d, i) => (
-          <span
-            key={i}
-            className="gold-dust"
-            style={{
-              left: d.left,
-              top: d.top,
-              width: d.size,
-              height: d.size,
-              ["--dust-duration" as string]: d.duration,
-              ["--dust-delay" as string]: d.delay,
-              ["--dust-x" as string]: d.drift,
-              ["--dust-opacity" as string]: d.opacity,
-            }}
-          />
-        ))}
-      </div>
-
+      {/* Curtain overlay */}
       <div ref={overlay} className="absolute inset-0 bg-[#2c2c2c] z-10" style={{ willChange: "opacity" }} />
 
+      {/* Curtains */}
       <div ref={curtainL} className="absolute inset-y-0 left-0 w-1/2 z-20 origin-left" style={{ background: "linear-gradient(to right,#2c2c2c,#3d3530)" }}>
         {[20, 40, 60, 80].map((p) => (
           <div key={p} className="absolute inset-y-0 w-px opacity-20" style={{ left: `${p}%`, background: "rgba(201,169,110,0.4)" }} />
@@ -214,29 +216,48 @@ function Hero() {
         ))}
       </div>
 
-      <div ref={content} className="relative z-30 h-full flex flex-col items-center justify-center text-center px-6">
-        <motion.p
-          className="text-gold text-[10px] tracking-[0.5em] uppercase mb-6 border border-gold/30 px-4 py-2 rounded-full"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.8, duration: 0.8 }}
-        >
-          Bộ sưu tập 2026 · Miễn phí tư vấn tận nhà
-        </motion.p>
+      {/* Content — vertically centered, left-aligned like reference */}
+      <div ref={content} className="relative z-30 h-full">
 
-        <h1 className="font-heading text-5xl md:text-7xl lg:text-8xl text-[#fdfbf8] leading-[1.1] mb-6 max-w-5xl">
-          <RevealLine delay={1.5}>Rèm Cửa Cao Cấp</RevealLine>
-          <RevealLine delay={1.65}>
-            <em className="text-gold not-italic">Cho Không Gian Của Bạn</em>
+        {/* Line 1 — center left */}
+        <h1 className="absolute top-1/2 -translate-y-[60%] left-8 md:left-14 lg:left-20 font-heading text-[clamp(2.4rem,6vw,5.5rem)] leading-none">
+          <RevealLine delay={1.4}>
+            <span style={{ color: "#f1c36b" }}>
+              Rèm Cửa Cao Cấp
+            </span>
           </RevealLine>
         </h1>
 
-        <p className="text-[#fdfbf8]/60 text-lg md:text-xl max-w-2xl leading-relaxed mb-10">
-          Từ tư vấn đến lắp đặt — đội ngũ chuyên gia mang đến giải pháp hoàn hảo,
-          đúng tiến độ và vượt mong đợi.
-        </p>
+        {/* Line 2 — center right */}
+        <h1 className="absolute top-1/2 translate-y-[50%] right-8 md:right-14 lg:right-20 font-heading text-[clamp(2.4rem,6vw,5.5rem)] leading-none text-right">
+          <RevealLine delay={1.65}>
+            <em style={{ color: "#f1c36b" }}>
+              Cho Không Gian Của Bạn
+            </em>
+          </RevealLine>
+        </h1>
 
-        <div className="flex flex-col sm:flex-row gap-4 items-center">
+      </div>
+
+      {/* Description — above bottom bar, aligned left */}
+      <motion.p
+        className="absolute bottom-24 left-8 md:left-14 lg:left-20 z-30 text-xs md:text-sm max-w-[380px] leading-relaxed text-white/60"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.9, duration: 0.7 }}
+      >
+        Từ tư vấn đến lắp đặt — đội ngũ chuyên gia mang đến giải pháp hoàn hảo, đúng tiến độ và vượt mong đợi.
+      </motion.p>
+
+      {/* Bottom bar — buttons center + dots right */}
+      <motion.div
+        className="absolute bottom-0 left-0 right-0 z-30 flex flex-row items-center px-8 md:px-14 lg:px-20 pb-8"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 2.1, duration: 0.7 }}
+      >
+        {/* Buttons — center */}
+        <div className="flex flex-row gap-4 items-center mx-auto">
           <Magnetic>
             <Link
               href="/products"
@@ -255,24 +276,23 @@ function Hero() {
           </Magnetic>
         </div>
 
-        <div className="mt-14 flex flex-wrap justify-center gap-8 text-[#fdfbf8]/40 text-xs tracking-widest uppercase">
-          {["Miễn phí đo đạc", "Bảo hành 5 năm", "Giao hàng nội thành"].map((t) => (
-            <span key={t} className="flex items-center gap-2">
-              <span className="w-1 h-1 rounded-full bg-gold inline-block" />
-              {t}
-            </span>
+        {/* Slide dots — far right */}
+        <div className="flex items-center gap-3 shrink-0">
+          {HERO_SLIDES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              aria-label={`Slide ${i + 1}`}
+              className="relative h-px w-8 bg-white/20 overflow-hidden border-none p-0 cursor-pointer"
+            >
+              <span
+                className="absolute inset-0 bg-[#c9a96e] origin-left transition-transform duration-300"
+                style={{ transform: i === current ? "scaleX(1)" : "scaleX(0)" }}
+              />
+            </button>
           ))}
         </div>
-
-        <motion.div
-          className="absolute bottom-10 flex flex-col items-center gap-2"
-          animate={{ y: [0, 8, 0] }}
-          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-        >
-          <span className="text-[#fdfbf8]/30 text-[10px] tracking-widest uppercase">Cuộn xuống</span>
-          <div className="w-px h-10 bg-gradient-to-b from-gold to-transparent" />
-        </motion.div>
-      </div>
+      </motion.div>
     </section>
   );
 }
@@ -288,7 +308,7 @@ const marqueeTrack = [...marqueeItems, ...marqueeItems];
 
 function Marquee() {
   return (
-    <div className="bg-[#2c2c2c] border-y border-white/10 py-4 overflow-hidden select-none marquee-mask">
+    <div className="bg-[#2c2c2c] border-y border-white/10 py-4 overflow-hidden select-none">
       <div className="flex whitespace-nowrap marquee-track">
         {marqueeTrack.map((item, i) => (
           <span
@@ -683,6 +703,7 @@ function ContactCTA() {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const field = (key: keyof FormState) => ({
     value: form[key],
@@ -692,10 +713,26 @@ function ContactCTA() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const phoneDigits = form.phone.replace(/\D/g, "");
+    if (phoneDigits.length < 9 || phoneDigits.length > 11) {
+      setError("Số điện thoại không hợp lệ. Vui lòng kiểm tra lại.");
+      return;
+    }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setLoading(false);
-    setSubmitted(true);
+    setError(null);
+    try {
+      await appointmentService.create({
+        name: form.name.trim(),
+        phone: form.phone.trim(),
+        address: form.address.trim() || undefined,
+        note: form.note.trim() || undefined,
+      });
+      setSubmitted(true);
+    } catch {
+      setError("Gửi không thành công. Vui lòng thử lại hoặc gọi trực tiếp cho chúng tôi.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputCls =
@@ -829,6 +866,9 @@ function ContactCTA() {
                       className={`${inputCls} resize-none`}
                     />
                   </div>
+                  {error && (
+                    <p className="text-red-500 text-xs text-center">{error}</p>
+                  )}
                   <button
                     type="submit"
                     disabled={loading}
@@ -856,13 +896,11 @@ export default function HomePage() {
     <>
       <Hero />
       <Marquee />
-      <WhyUs />
-      <Collections />
-      <RoomVisualizer />
-      <BeforeAfter />
-      <PriceEstimator />
-      <HowItWorks />
       <Stats />
+      <Collections />
+      <WhyUs />
+      <HowItWorks />
+      <PriceEstimator />
       <Lookbook />
       <Testimonials />
       <ContactCTA />

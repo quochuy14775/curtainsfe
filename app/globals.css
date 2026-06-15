@@ -234,8 +234,6 @@
 
 /* Fade marquee edges into the section background */
 .marquee-mask {
-  mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
 }
 
 /* Marquee scroll — CSS keyframes pause in place on hover (no jump) */
