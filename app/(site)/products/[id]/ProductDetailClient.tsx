@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, ShoppingBag, Check, Truck, RotateCcw, ZoomIn } from "lucide-react";
 import type { ProductWithCategory } from "@/lib/data";
 import { useCartStore } from "@/lib/cart-store";
@@ -19,10 +20,10 @@ const tagColor: Record<string, string> = {
 };
 
 const GALLERY_VIEWS = [
-  { label: "Chính diện", angle: "160deg", stripeOp: 0.2 },
-  { label: "Góc nghiêng", angle: "220deg", stripeOp: 0.28 },
-  { label: "Ánh sáng bên", angle: "60deg", stripeOp: 0.15 },
-  { label: "Chi tiết vải", angle: "105deg", stripeOp: 0.35 },
+  { label: "Chính diện", src: "/products/Rem-cua-mau-vang-dong-mang-phong-cach-hoang-gia-sang-trong_1752891269-1024x768.jpg" },
+  { label: "Góc nghiêng", src: "/products/rem-cua-cho-van-phong-cong-ty-tphcm-chong-choi-man-hinh-toi-uu-anh-sang_1776927048.jpg" },
+  { label: "Ánh sáng bên", src: "/products/Rem-cua-1-lop-nhe-nhang-cho-can-ho-nho_1756178119-1024x768.jpeg" },
+  { label: "Chi tiết vải", src: "/products/TOP_6_LO_I_REM_C_A_PH_BI_N_BONARIO_3_1024x1024.webp" },
 ];
 
 const TABS = [
@@ -75,11 +76,11 @@ export function ProductDetailClient({ product, related }: Props) {
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-6">
         <Link
-          href="/"
+          href="/products"
           className="inline-flex items-center gap-2 text-stone text-xs tracking-widest uppercase hover:text-charcoal transition-colors duration-200"
         >
           <ArrowLeft size={13} />
-          Trang chủ
+          Sản phẩm
         </Link>
       </div>
 
@@ -99,7 +100,7 @@ export function ProductDetailClient({ product, related }: Props) {
               ref={galleryRef}
               onMouseMove={handleLensMove}
               onMouseLeave={() => setLens(null)}
-              className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-linen cursor-zoom-in"
+              className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-linen cursor-zoom-in"
             >
               <AnimatePresence mode="wait">
                 <motion.div
@@ -109,26 +110,18 @@ export function ProductDetailClient({ product, related }: Props) {
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.35 }}
                   className="absolute inset-0"
-                  style={{
-                    background: `linear-gradient(${GALLERY_VIEWS[activeView].angle}, ${product.color}33 0%, ${product.color}88 40%, ${product.color}cc 100%)`,
-                  }}
-                />
+                >
+                  <Image
+                    src={GALLERY_VIEWS[activeView].src}
+                    alt={GALLERY_VIEWS[activeView].label}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 552px"
+                    quality={90}
+                    className="object-cover object-center"
+                    priority={activeView === 0}
+                  />
+                </motion.div>
               </AnimatePresence>
-
-              {/* Fabric texture */}
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  opacity: GALLERY_VIEWS[activeView].stripeOp,
-                  backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(0,0,0,0.08) 4px, rgba(0,0,0,0.08) 5px)`,
-                }}
-              />
-              <div
-                className="absolute inset-0 opacity-10 pointer-events-none"
-                style={{
-                  backgroundImage: `repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(0,0,0,0.08) 4px, rgba(0,0,0,0.08) 5px)`,
-                }}
-              />
 
               {/* View label */}
               <div className="absolute top-4 right-4 bg-black/20 backdrop-blur-sm text-white/80 text-[9px] tracking-widest uppercase px-2 py-1 rounded">
@@ -163,44 +156,32 @@ export function ProductDetailClient({ product, related }: Props) {
                 </div>
               )}
 
-              {/* Magnifier lens — texture vải phóng đại 3× */}
+              {/* Magnifier lens — zoom ảnh thực 3× */}
               {lens && (
                 <div
-                  className="absolute w-44 h-44 rounded-full pointer-events-none border-2 border-white/70 shadow-2xl"
+                  className="absolute w-44 h-44 rounded-full pointer-events-none border-2 border-white/70 shadow-2xl overflow-hidden"
                   style={{
                     left: `${lens.x}%`,
                     top: `${lens.y}%`,
                     transform: "translate(-50%, -50%)",
-                    background: `linear-gradient(${GALLERY_VIEWS[activeView].angle}, ${product.color}55 0%, ${product.color}99 40%, ${product.color}dd 100%)`,
                   }}
                 >
-                  {/* Weave dọc phóng to */}
                   <div
-                    className="absolute inset-0 rounded-full"
+                    className="absolute inset-0"
                     style={{
-                      opacity: 0.5,
-                      backgroundImage:
-                        "repeating-linear-gradient(0deg, transparent, transparent 11px, rgba(0,0,0,0.14) 11px, rgba(0,0,0,0.14) 14px)",
-                    }}
-                  />
-                  {/* Weave ngang phóng to */}
-                  <div
-                    className="absolute inset-0 rounded-full"
-                    style={{
-                      opacity: 0.3,
-                      backgroundImage:
-                        "repeating-linear-gradient(90deg, transparent, transparent 11px, rgba(0,0,0,0.12) 11px, rgba(0,0,0,0.12) 14px)",
+                      backgroundImage: `url(${GALLERY_VIEWS[activeView].src})`,
+                      backgroundSize: "300%",
+                      backgroundPosition: `${lens.x}% ${lens.y}%`,
                     }}
                   />
                   {/* Sheen kính */}
                   <div
                     className="absolute inset-0 rounded-full"
                     style={{
-                      background:
-                        "radial-gradient(circle at 32% 28%, rgba(255,255,255,0.35) 0%, transparent 42%)",
+                      background: "radial-gradient(circle at 32% 28%, rgba(255,255,255,0.2) 0%, transparent 42%)",
                     }}
                   />
-                  <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-white/80 text-[8px] tracking-widest uppercase">
+                  <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-white/80 text-[8px] tracking-widest uppercase drop-shadow">
                     ×3
                   </span>
                 </div>
@@ -220,22 +201,14 @@ export function ProductDetailClient({ product, related }: Props) {
                   }`}
                   aria-label={view.label}
                 >
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      background: `linear-gradient(${view.angle}, ${product.color}44 0%, ${product.color}bb 100%)`,
-                    }}
+                  <Image
+                    src={view.src}
+                    alt={view.label}
+                    fill
+                    sizes="150px"
+                    quality={75}
+                    className="object-cover object-center"
                   />
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      opacity: view.stripeOp,
-                      backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 4px)`,
-                    }}
-                  />
-                  <span className="absolute inset-0 flex items-end justify-center pb-1">
-                    <span className="text-white/70 text-[8px] tracking-wide">{view.label}</span>
-                  </span>
                 </button>
               ))}
             </div>
@@ -292,23 +265,13 @@ export function ProductDetailClient({ product, related }: Props) {
                     transition={{ duration: 0.2 }}
                     className="pt-5"
                   >
-                    <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="flex gap-8">
                       <div>
                         <p className="text-stone text-[10px] tracking-widest uppercase mb-1">Chất liệu</p>
                         <p className="font-heading text-charcoal text-sm">{product.material}</p>
                       </div>
                       <div>
-                        <p className="text-stone text-[10px] tracking-widest uppercase mb-1">Rộng</p>
-                        <p className="font-heading text-charcoal text-sm">{product.width}</p>
-                      </div>
-                      <div>
-                        <p className="text-stone text-[10px] tracking-widest uppercase mb-1">Dài</p>
-                        <p className="font-heading text-charcoal text-sm">{product.drop}</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-4 pt-4 border-t border-linen">
-                      <div>
-                        <p className="text-stone text-[10px] tracking-widests uppercase mb-1">Xuất xứ</p>
+                        <p className="text-stone text-[10px] tracking-widest uppercase mb-1">Xuất xứ</p>
                         <p className="font-heading text-charcoal text-sm">Nhập khẩu</p>
                       </div>
                       <div>

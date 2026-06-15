@@ -13,8 +13,18 @@ import {
   Star,
   CheckCircle,
   ArrowRight,
+  CalendarDays,
+  Palette,
+  Hammer,
 } from "lucide-react";
 import { categories } from "@/lib/data";
+
+const COLLECTION_IMAGES: Record<string, string> = {
+  "luxury-fabric": "/products/Rem-cua-mau-vang-dong-mang-phong-cach-hoang-gia-sang-trong_1752891269-1024x768.jpg",
+  "silk":          "/products/Rem-cua-1-lop-nhe-nhang-cho-can-ho-nho_1756178119-1024x768.jpeg",
+  "roller":        "/products/rem-cua-cho-van-phong-cong-ty-tphcm-chong-choi-man-hinh-toi-uu-anh-sang_1776927048.jpg",
+  "rainbow":       "/products/TOP_6_LO_I_REM_C_A_PH_BI_N_BONARIO_3_1024x1024.webp",
+};
 import { appointmentService } from "@/services/appointmentService";
 import { Magnetic } from "@/components/ui/Magnetic";
 import { FabricAtelier } from "@/components/sections/FabricAtelier";
@@ -51,16 +61,19 @@ const STEPS = [
     number: "01",
     title: "Liên Hệ & Đặt Lịch",
     desc: "Gọi điện hoặc điền form — chúng tôi xác nhận lịch hẹn trong vòng 2 giờ.",
+    icon: CalendarDays,
   },
   {
     number: "02",
     title: "Tư Vấn Thiết Kế",
     desc: "Chuyên gia đến tận nhà, mang theo bộ mẫu vải để bạn trải nghiệm thực tế.",
+    icon: Palette,
   },
   {
     number: "03",
     title: "Sản Xuất & Lắp Đặt",
     desc: "Rèm may đo riêng và lắp đặt hoàn chỉnh trong vòng 5–7 ngày làm việc.",
+    icon: Hammer,
   },
 ];
 
@@ -216,27 +229,27 @@ function Hero() {
         ))}
       </div>
 
-      {/* Content — vertically centered, left-aligned like reference */}
-      <div ref={content} className="relative z-30 h-full">
-
-        {/* Line 1 — center left */}
-        <h1 className="absolute top-1/2 -translate-y-[60%] left-8 md:left-14 lg:left-20 font-heading text-[clamp(2.4rem,6vw,5.5rem)] leading-none">
-          <RevealLine delay={1.4}>
-            <span style={{ color: "#f1c36b" }}>
-              Rèm Cửa Cao Cấp
-            </span>
-          </RevealLine>
-        </h1>
-
-        {/* Line 2 — center right */}
-        <h1 className="absolute top-1/2 translate-y-[50%] right-8 md:right-14 lg:right-20 font-heading text-[clamp(2.4rem,6vw,5.5rem)] leading-none text-right">
-          <RevealLine delay={1.65}>
-            <em style={{ color: "#f1c36b" }}>
-              Cho Không Gian Của Bạn
-            </em>
-          </RevealLine>
-        </h1>
-
+      {/* Content — vertically centered, left-aligned */}
+      <div ref={content} className="relative z-30 h-full flex items-start pt-[50vh]">
+        <div className="px-8 md:px-14 lg:px-20">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.3, duration: 0.6 }}
+            className="inline-flex items-center gap-2 mb-5 px-4 py-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
+            <span className="text-white/80 text-[10px] tracking-[0.3em] uppercase">Chất lượng là hàng đầu</span>
+          </motion.div>
+          <h1 className="font-heading text-[clamp(2.4rem,6vw,5.5rem)] leading-[1.05] font-bold tracking-tight">
+            <RevealLine delay={1.4}>
+              <span className="text-white">Rèm Cửa Cao Cấp</span>
+            </RevealLine>
+            <RevealLine delay={1.6}>
+              <span className="text-white/90">Cho Không Gian Của Bạn</span>
+            </RevealLine>
+          </h1>
+        </div>
       </div>
 
       {/* Description — above bottom bar, aligned left */}
@@ -249,35 +262,14 @@ function Hero() {
         Từ tư vấn đến lắp đặt — đội ngũ chuyên gia mang đến giải pháp hoàn hảo, đúng tiến độ và vượt mong đợi.
       </motion.p>
 
-      {/* Bottom bar — buttons center + dots right */}
+      {/* Top bar — slide dots */}
       <motion.div
-        className="absolute bottom-0 left-0 right-0 z-30 flex flex-row items-center px-8 md:px-14 lg:px-20 pb-8"
-        initial={{ opacity: 0, y: 12 }}
+        className="absolute top-0 left-0 right-0 z-30 flex items-center justify-center px-8 md:px-14 lg:px-20 pt-6"
+        initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 2.1, duration: 0.7 }}
       >
-        {/* Buttons — center */}
-        <div className="flex flex-row gap-4 items-center mx-auto">
-          <Magnetic>
-            <Link
-              href="/products"
-              className="inline-block px-10 py-4 bg-gold text-[#2c2c2c] text-sm tracking-widest uppercase hover:bg-[#e8d5b0] transition-colors duration-300 rounded-full font-medium shadow-[0_8px_30px_rgba(201,169,110,0.25)]"
-            >
-              Khám phá bộ sưu tập
-            </Link>
-          </Magnetic>
-          <Magnetic strength={0.2}>
-            <a
-              href="#contact"
-              className="inline-block px-10 py-4 border border-[#fdfbf8]/30 text-[#fdfbf8]/80 text-sm tracking-widest uppercase hover:border-gold hover:text-gold transition-colors duration-300 rounded-full"
-            >
-              Tư vấn miễn phí
-            </a>
-          </Magnetic>
-        </div>
-
-        {/* Slide dots — far right */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-3">
           {HERO_SLIDES.map((_, i) => (
             <button
               key={i}
@@ -291,6 +283,37 @@ function Hero() {
               />
             </button>
           ))}
+        </div>
+      </motion.div>
+
+      {/* Bottom bar — buttons centered */}
+      <motion.div
+        className="absolute bottom-0 left-0 right-0 z-30 flex justify-center pb-10"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 2.1, duration: 0.7 }}
+      >
+        <div className="flex items-center gap-4">
+          <Magnetic>
+            <Link
+              href="/products"
+              aria-label="Khám phá bộ sưu tập"
+              className="group inline-flex items-center justify-center gap-2 bg-gold text-[#2c2c2c] hover:bg-[#e8d5b0] transition-colors duration-300 shadow-[0_8px_30px_rgba(201,169,110,0.3)] rounded-full w-12 h-12 sm:w-auto sm:h-auto sm:px-8 sm:py-4"
+            >
+              <ArrowRight size={16} className="shrink-0 transition-transform duration-300 group-hover:rotate-90" />
+              <span className="hidden sm:inline text-sm tracking-widest uppercase font-medium">Khám phá bộ sưu tập</span>
+            </Link>
+          </Magnetic>
+          <Magnetic strength={0.2}>
+            <a
+              href="#contact"
+              aria-label="Tư vấn miễn phí"
+              className="inline-flex items-center justify-center gap-2 border border-[#fdfbf8]/30 text-[#fdfbf8]/80 hover:border-gold hover:text-gold transition-colors duration-300 rounded-full w-12 h-12 sm:w-auto sm:h-auto sm:px-8 sm:py-4"
+            >
+              <Phone size={15} className="shrink-0" />
+              <span className="hidden sm:inline text-sm tracking-widest uppercase">Tư vấn miễn phí</span>
+            </a>
+          </Magnetic>
         </div>
       </motion.div>
     </section>
@@ -390,7 +413,8 @@ function HowItWorks() {
 
   return (
     <section className="relative py-28 bg-[#2c2c2c] overflow-hidden grain">
-      <div ref={ref} className="max-w-7xl mx-auto px-6 lg:px-12">
+      <div ref={ref} className="max-w-4xl mx-auto px-6 lg:px-12">
+        {/* Header */}
         <div className="text-center mb-20">
           <motion.p
             initial={{ opacity: 0, y: 16 }}
@@ -412,40 +436,112 @@ function HowItWorks() {
           </motion.h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-          {STEPS.map((step, i) => (
-            <motion.div
-              key={step.number}
-              initial={{ opacity: 0, y: 40 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.15 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
-              className="relative text-center group"
-            >
-              <div className="relative mx-auto w-24 h-24 mb-8">
-                <div className="absolute inset-0 rounded-full border border-gold/20 group-hover:border-gold/50 transition-colors duration-500" />
-                <div className="absolute inset-2 rounded-full border border-gold/10" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="font-heading text-3xl text-gold/60 group-hover:text-gold transition-colors duration-500">
-                    {step.number}
-                  </span>
+        {/* ── Vertical zigzag timeline ── */}
+        <div className="relative">
+          {/* Mobile line — bên trái, thẳng với dot (center của w-[48px]) */}
+          <div className="absolute md:hidden left-[23px] top-0 bottom-0 w-px bg-white/10" />
+          <motion.div
+            className="absolute md:hidden left-[23px] top-0 w-px bg-gradient-to-b from-gold/70 via-gold/50 to-gold/20 origin-top"
+            style={{ bottom: 0 }}
+            initial={{ scaleY: 0 }}
+            animate={inView ? { scaleY: 1 } : { scaleY: 0 }}
+            transition={{ duration: 1.4, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          />
+          {/* Desktop line — giữa */}
+          <div className="hidden md:block absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px bg-white/10" />
+          <motion.div
+            className="hidden md:block absolute left-1/2 -translate-x-1/2 top-0 w-px bg-gradient-to-b from-gold/70 via-gold/50 to-gold/20 origin-top"
+            style={{ bottom: 0 }}
+            initial={{ scaleY: 0 }}
+            animate={inView ? { scaleY: 1 } : { scaleY: 0 }}
+            transition={{ duration: 1.4, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          />
+
+          {STEPS.map((step, i) => {
+            const isLeft = i % 2 === 0;
+            return (
+              <motion.div
+                key={step.number}
+                initial={{ opacity: 0, x: isLeft ? -30 : 30 }}
+                animate={inView ? { opacity: 1, x: 0 } : {}}
+                transition={{ duration: 0.8, delay: 0.4 + i * 0.22, ease: [0.22, 1, 0.36, 1] }}
+                className={`relative ${i < STEPS.length - 1 ? "mb-10 md:mb-16" : ""}`}
+              >
+                {/* ── Mobile: line kia bên trái, card chiếm full width ── */}
+                <div className="flex md:hidden items-start gap-0">
+                  {/* Dot */}
+                  <div className="relative z-10 w-[48px] shrink-0 flex justify-center pt-4">
+                    <motion.div
+                      className="relative w-3.5 h-3.5 rounded-full bg-gold"
+                      initial={{ scale: 0 }}
+                      animate={inView ? { scale: 1 } : {}}
+                      transition={{ duration: 0.4, delay: 0.55 + i * 0.22 }}
+                      style={{ boxShadow: "0 0 0 4px rgba(201,169,110,0.12), 0 0 12px rgba(201,169,110,0.45)" }}
+                    >
+                      <motion.div
+                        className="absolute inset-[-7px] rounded-full border border-gold/25"
+                        animate={inView ? { scale: [1, 1.7, 1], opacity: [0.5, 0, 0.5] } : {}}
+                        transition={{ duration: 2.5, delay: 0.8 + i * 0.22, repeat: Infinity, ease: "easeInOut" }}
+                      />
+                    </motion.div>
+                  </div>
+                  {/* Card */}
+                  <div className="flex-1">
+                    <div className="border border-white/10 rounded-2xl p-5 hover:border-gold/30 transition-colors duration-500 bg-white/[0.02] group text-left">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-9 h-9 rounded-full border border-gold/30 bg-gold/8 flex items-center justify-center shrink-0 group-hover:bg-gold/15 transition-all duration-500">
+                          <step.icon size={16} className="text-gold" strokeWidth={1.5} />
+                        </div>
+                        <h3 className="font-heading text-lg text-[#fdfbf8] leading-tight">{step.title}</h3>
+                      </div>
+                      <p className="text-[#fdfbf8]/45 text-sm leading-relaxed">{step.desc}</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <h3 className="font-heading text-xl text-[#fdfbf8] mb-4">{step.title}</h3>
-              <p className="text-[#fdfbf8]/50 text-sm leading-relaxed max-w-xs mx-auto">{step.desc}</p>
-              {i < STEPS.length - 1 && (
-                <div className="hidden md:flex absolute top-12 -right-4 items-center justify-center z-10">
-                  <ArrowRight size={16} className="text-gold/30" />
+
+                {/* ── Desktop: zigzag trái/phải ── */}
+                <div className={`hidden md:flex items-center gap-0 ${isLeft ? "flex-row" : "flex-row-reverse"}`}>
+                  {/* Card */}
+                  <div className={`w-[calc(50%-36px)] ${isLeft ? "pr-10" : "pl-10"}`}>
+                    <div className={`border border-white/10 rounded-2xl p-7 hover:border-gold/30 transition-colors duration-500 bg-white/[0.02] group ${isLeft ? "text-right" : "text-left"}`}>
+                      <div className={`flex items-center gap-3 mb-3 ${isLeft ? "flex-row-reverse" : "flex-row"}`}>
+                        <div className="w-10 h-10 rounded-full border border-gold/30 bg-gold/8 flex items-center justify-center shrink-0 group-hover:bg-gold/15 group-hover:border-gold/50 transition-all duration-500">
+                          <step.icon size={18} className="text-gold" strokeWidth={1.5} />
+                        </div>
+                        <h3 className="font-heading text-xl text-[#fdfbf8] leading-tight">{step.title}</h3>
+                      </div>
+                      <p className="text-[#fdfbf8]/45 text-sm leading-relaxed">{step.desc}</p>
+                    </div>
+                  </div>
+                  {/* Dot */}
+                  <div className="relative z-10 w-[72px] shrink-0 flex justify-center">
+                    <motion.div
+                      className="relative w-4 h-4 rounded-full bg-gold"
+                      initial={{ scale: 0 }}
+                      animate={inView ? { scale: 1 } : {}}
+                      transition={{ duration: 0.4, delay: 0.55 + i * 0.22 }}
+                      style={{ boxShadow: "0 0 0 4px rgba(201,169,110,0.15), 0 0 14px rgba(201,169,110,0.5)" }}
+                    >
+                      <motion.div
+                        className="absolute inset-[-8px] rounded-full border border-gold/25"
+                        animate={inView ? { scale: [1, 1.7, 1], opacity: [0.5, 0, 0.5] } : {}}
+                        transition={{ duration: 2.5, delay: 0.8 + i * 0.22, repeat: Infinity, ease: "easeInOut" }}
+                      />
+                    </motion.div>
+                  </div>
+                  {/* Spacer */}
+                  <div className="w-[calc(50%-52px)]" />
                 </div>
-              )}
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, delay: 0.6 }}
-          className="text-center mt-16"
+          transition={{ duration: 0.7, delay: 1.1 }}
+          className="text-center mt-20"
         >
           <Magnetic className="inline-block">
             <a
@@ -469,8 +565,8 @@ function Collections() {
 
   return (
     <section id="collections" className="py-28 bg-[#fdfbf8]">
-      <div ref={ref} className="max-w-7xl mx-auto px-6 lg:px-12">
-        <div className="mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+      <div ref={ref}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <div>
             <motion.p
               initial={{ opacity: 0, y: 16 }}
@@ -505,41 +601,71 @@ function Collections() {
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 px-4 md:px-8">
           {categories.map((cat, i) => (
             <motion.div
               key={cat.id}
-              initial={{ opacity: 0, y: 40 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.7, delay: 0.15 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.7, delay: 0.1 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
             >
               <Link
                 href={`/products?category=${cat.id}`}
-                className="group relative aspect-[3/4] overflow-hidden cursor-pointer block rounded-2xl"
+                className="group relative aspect-[4/3] overflow-hidden rounded-2xl flex flex-col justify-between p-5 md:p-8 cursor-pointer block"
               >
-                <div className={`absolute inset-0 bg-gradient-to-b ${cat.bg} transition-transform duration-700 group-hover:scale-105`} />
-                <div
-                  className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity duration-500"
-                  style={{
-                    backgroundImage:
-                      "repeating-linear-gradient(90deg,transparent,transparent 8px,rgba(255,255,255,0.3) 8px,rgba(255,255,255,0.3) 9px)",
-                  }}
+                {/* Background image */}
+                <Image
+                  src={COLLECTION_IMAGES[cat.id] ?? "/previews/rem-cua-pk-02-decox-design.jpg"}
+                  alt={cat.title}
+                  fill
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                  quality={85}
+                  className="object-cover object-center transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500" />
-                <div className="absolute inset-0 p-8 flex flex-col justify-between">
-                  <div className="w-8 h-px" style={{ backgroundColor: cat.accent }} />
-                  <div>
-                    <p className="text-xs tracking-widest uppercase mb-2" style={{ color: cat.accent }}>
-                      {cat.count}
-                    </p>
-                    <h3 className="font-heading text-2xl text-[#fdfbf8] leading-tight mb-1">{cat.title}</h3>
-                    <p className="text-[#fdfbf8]/60 text-sm">{cat.subtitle}</p>
-                    <p
-                      className="mt-4 text-xs tracking-widest uppercase opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300"
-                      style={{ color: cat.accent }}
-                    >
-                      Khám phá →
-                    </p>
+
+                {/* Typography lớn fill card — ẩn mặc định, hiện khi hover */}
+                <div
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
+                >
+                  <span
+                    className="font-heading leading-none whitespace-nowrap opacity-0 group-hover:opacity-[0.13] scale-75 group-hover:scale-100 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                    style={{
+                      fontSize: "clamp(3rem,10vw,6rem)",
+                      color: cat.accent,
+                      writingMode: "vertical-rl",
+                      textOrientation: "mixed",
+                      transform: "rotate(180deg)",
+                    }}
+                  >
+                    {cat.title}
+                  </span>
+                </div>
+
+                {/* Vignette */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+
+                {/* Top — accent dot + count */}
+                <div className="relative flex items-center justify-between">
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: cat.accent, boxShadow: `0 0 8px ${cat.accent}80` }}
+                  />
+                  <span className="text-[9px] md:text-[10px] tracking-[0.3em] uppercase" style={{ color: `${cat.accent}99` }}>
+                    {cat.count}
+                  </span>
+                </div>
+
+                {/* Bottom — title + subtitle + cta */}
+                <div className="relative">
+                  <h3 className="font-heading text-[#fdfbf8] leading-tight mb-1 text-lg md:text-xl lg:text-2xl group-hover:translate-y-[-2px] transition-transform duration-300">
+                    {cat.title}
+                  </h3>
+                  <p className="text-[#fdfbf8]/50 text-xs md:text-sm">{cat.subtitle}</p>
+                  <div
+                    className="mt-3 inline-flex items-center gap-1.5 text-[10px] tracking-widest uppercase opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300"
+                    style={{ color: cat.accent }}
+                  >
+                    Khám phá <ArrowRight size={10} />
                   </div>
                 </div>
               </Link>
