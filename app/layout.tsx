@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
@@ -17,7 +17,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Maison Drapé — Luxury Curtains & Drapes",
+  title: "Ngọc Huệ — Luxury Curtains & Drapes",
   description:
     "Khám phá bộ sưu tập rèm cửa cao cấp. Nơi nghệ thuật và không gian sống hòa quyện.",
   icons: {

@@ -63,7 +63,7 @@ export function Footer() {
         </div>
 
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-warm-white/40">
-          <p>© 2026 Maison Drapé. All rights reserved.</p>
+          <p>© 2026 Ngọc Huệ. All rights reserved.</p>
           <div className="flex gap-6">
             <Link href="#" className="hover:text-warm-white/80 transition-colors">
               Chính sách bảo mật
