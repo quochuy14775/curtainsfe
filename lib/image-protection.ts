@@ -62,7 +62,7 @@ export function initImageProtection() {
     img.draggable = false;
     img.oncontextmenu = () => false;
     img.style.userSelect = "none";
-    img.style.WebkitUserSelect = "none";
+    (img.style as any).webkitUserSelect = "none";
   });
 
   // Observer để áp dụng cho ảnh được tải động
@@ -75,14 +75,14 @@ export function initImageProtection() {
             element.draggable = false;
             element.oncontextmenu = () => false;
             element.style.userSelect = "none";
-            element.style.WebkitUserSelect = "none";
+            (element.style as any).webkitUserSelect = "none";
           }
           // Cũng check các ảnh con nếu có
           element.querySelectorAll("img").forEach((img) => {
             img.draggable = false;
             img.oncontextmenu = () => false;
             img.style.userSelect = "none";
-            img.style.WebkitUserSelect = "none";
+            (img.style as any).webkitUserSelect = "none";
           });
         }
       });
