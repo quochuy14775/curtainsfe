@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { Search, ShoppingBag, Heart } from "lucide-react";
 import { useCartStore } from "@/lib/cart-store";
 import { useWishlist } from "@/lib/wishlist-store";
@@ -62,12 +63,17 @@ export function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-12 h-20 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="group flex flex-col leading-none">
-            <span className={`font-heading text-xl font-semibold tracking-wide transition-colors duration-500 ${scrolled ? "text-charcoal" : "text-[#fdfbf8]"}`}>
-              Rèm màn
-            </span>
+          <Link href="/" className="group flex items-center gap-3">
+            {/*<Image*/}
+            {/*  src="/favicon.png"*/}
+            {/*  alt="Ngọc Huệ Logo"*/}
+            {/*  width={56}*/}
+            {/*  height={56}*/}
+            {/*  className="rounded-full object-cover"*/}
+            {/*  priority*/}
+            {/*/>*/}
             <span className="font-heading text-xs tracking-[0.3em] text-gold uppercase">
-              Ngọc Huệ
+              Ngọc Huệ Rèm màn
             </span>
           </Link>
 

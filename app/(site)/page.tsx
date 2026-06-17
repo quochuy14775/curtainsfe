@@ -111,10 +111,11 @@ const TESTIMONIALS = [
 // ─── HERO ────────────────────────────────────────────────────────────────────
 
 const HERO_SLIDES = [
-  "/previews/rem-cua-pk-02-decox-design.jpg",
-  "/previews/Mau-rem-cua-so-hien-dai-sang-trong-cho-phong-ngu-master_1750391206.jpg",
+  "/previews/decor.png",
+  "/previews/decor2.png",
   "/previews/manh-cau-vong.png",
-    "/previews/venetianblinds02-5117.jpg"
+    "/previews/venetianblinds02-5117.jpg",
+    "/previews/decor3.png",
 ];
 
 // Line-by-line editorial reveal for the hero heading
@@ -243,10 +244,10 @@ function Hero() {
           </motion.div>
           <h1 className="font-heading text-[clamp(2.4rem,6vw,5.5rem)] leading-[1.05] font-bold tracking-tight">
             <RevealLine delay={1.4}>
-              <span className="text-white">Rèm Cửa Cao Cấp</span>
+              <span style={{ color: "#d4c4ae" }}>Rèm Cửa Cao Cấp</span>
             </RevealLine>
             <RevealLine delay={1.6}>
-              <span className="text-white/90">Cho Không Gian Của Bạn</span>
+              <span style={{ color: "#c9b9a3" }}>Cho Không Gian Của Bạn</span>
             </RevealLine>
           </h1>
         </div>
@@ -615,7 +616,7 @@ function Collections() {
               >
                 {/* Background image */}
                 <Image
-                  src={COLLECTION_IMAGES[cat.id] ?? "/previews/rem-cua-pk-02-decox-design.jpg"}
+                  src={COLLECTION_IMAGES[cat.id] ?? "/previews/decor.png"}
                   alt={cat.title}
                   fill
                   sizes="(max-width: 768px) 50vw, 25vw"

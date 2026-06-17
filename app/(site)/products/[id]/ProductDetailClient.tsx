@@ -20,10 +20,10 @@ const tagColor: Record<string, string> = {
 };
 
 const GALLERY_VIEWS = [
-  { label: "Chính diện", src: "/products/Rem-cua-mau-vang-dong-mang-phong-cach-hoang-gia-sang-trong_1752891269-1024x768.jpg" },
-  { label: "Góc nghiêng", src: "/products/rem-cua-cho-van-phong-cong-ty-tphcm-chong-choi-man-hinh-toi-uu-anh-sang_1776927048.jpg" },
-  { label: "Ánh sáng bên", src: "/products/Rem-cua-1-lop-nhe-nhang-cho-can-ho-nho_1756178119-1024x768.jpeg" },
-  { label: "Chi tiết vải", src: "/products/TOP_6_LO_I_REM_C_A_PH_BI_N_BONARIO_3_1024x1024.webp" },
+  { label: "Chính diện", src: "/product1/chinhdien.png" },
+  { label: "Góc trái", src: "/product1/trai.png" },
+  { label: "Góc phải", src: "/product1/phai.png" },
+  { label: "Chi tiết vải", src: "/product1/chitiet.png" },
 ];
 
 const TABS = [
@@ -49,6 +49,10 @@ export function ProductDetailClient({ product, related }: Props) {
   const [added, setAdded] = useState(false);
   // Lens kính lúp soi chất liệu vải — vị trí theo % để scale mọi kích thước
   const [lens, setLens] = useState<{ x: number; y: number } | null>(null);
+
+  // Aspect ratio: all images use 0.80:1 (5:6)
+  const aspectRatios = [0.80, 0.80, 0.80, 0.80];
+  const currentAspectRatio = aspectRatios[activeView];
 
   // Ghi nhận sản phẩm đã xem
   useEffect(() => {
@@ -100,7 +104,8 @@ export function ProductDetailClient({ product, related }: Props) {
               ref={galleryRef}
               onMouseMove={handleLensMove}
               onMouseLeave={() => setLens(null)}
-              className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-linen cursor-zoom-in"
+              className="relative rounded-2xl overflow-hidden bg-linen cursor-zoom-in transition-all duration-300"
+              style={{ aspectRatio: currentAspectRatio }}
             >
               <AnimatePresence mode="wait">
                 <motion.div
@@ -194,11 +199,12 @@ export function ProductDetailClient({ product, related }: Props) {
                 <button
                   key={i}
                   onClick={() => setActiveView(i)}
-                  className={`relative aspect-[3/2] rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                  className={`relative rounded-lg overflow-hidden border-2 transition-all duration-200 ${
                     activeView === i
                       ? "border-gold scale-[1.03] shadow-md"
                       : "border-transparent opacity-60 hover:opacity-90"
                   }`}
+                  style={{ aspectRatio: aspectRatios[i] }}
                   aria-label={view.label}
                 >
                   <Image

@@ -1,6 +1,7 @@
 ﻿import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import { ImageProtectionProvider } from "@/components/providers/ImageProtectionProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -21,8 +22,8 @@ export const metadata: Metadata = {
   description:
     "Khám phá bộ sưu tập rèm cửa cao cấp. Nơi nghệ thuật và không gian sống hòa quyện.",
   icons: {
-    icon: "/icon.png",
-    apple: "/icon.png",
+    icon: "/favicon.png",
+    apple: "/favicon.png",
   },
 };
 
@@ -34,6 +35,7 @@ export default function RootLayout({
   return (
     <html lang="vi" className={`${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
       <body className="min-h-screen flex flex-col bg-warm-white">
+        <ImageProtectionProvider />
         {children}
       </body>
     </html>
