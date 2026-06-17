@@ -202,18 +202,27 @@ function Hero() {
               alt=""
               fill
               priority={current === 0}
-              quality={90}
+              quality={100}
               sizes="100vw"
               className="object-cover"
             />
           </motion.div>
         </AnimatePresence>
-        <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.35)" }} />
+        <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.20)" }} />
       </motion.div>
 
 
       {/* Cinematic vignette */}
       <div className="absolute inset-0 hero-vignette pointer-events-none z-[2]" />
+
+      {/* Scrim gradient — tối đậm ở góc dưới-trái nơi đặt khối nội dung, giữ phần ảnh còn lại sáng */}
+      <div
+        className="absolute inset-0 pointer-events-none z-[2]"
+        style={{
+          background:
+            "linear-gradient(60deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 38%, transparent 65%)",
+        }}
+      />
 
       {/* Curtain overlay */}
       <div ref={overlay} className="absolute inset-0 bg-[#2c2c2c] z-10" style={{ willChange: "opacity" }} />
@@ -230,9 +239,9 @@ function Hero() {
         ))}
       </div>
 
-      {/* Content — vertically centered, left-aligned */}
-      <div ref={content} className="relative z-30 h-full flex items-start pt-[50vh]">
-        <div className="px-8 md:px-14 lg:px-20">
+      {/* Content — khối nội dung gom về giữa-trái */}
+      <div ref={content} className="relative z-30 h-full flex items-center">
+        <div className="px-8 md:px-14 lg:px-20 w-full max-w-2xl">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -242,50 +251,29 @@ function Hero() {
             <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
             <span className="text-white/80 text-[10px] tracking-[0.3em] uppercase">Chất lượng là hàng đầu</span>
           </motion.div>
-          <h1 className="font-heading text-[clamp(2.4rem,6vw,5.5rem)] leading-[1.05] font-bold tracking-tight">
+          <h1
+            className="font-heading text-[clamp(2.4rem,6vw,5.5rem)] leading-[1.05] font-bold tracking-tight"
+            style={{ textShadow: "0 2px 24px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.35)" }}
+          >
             <RevealLine delay={1.4}>
-              <span style={{ color: "#d4c4ae" }}>Rèm Cửa Cao Cấp</span>
+              <span style={{ color: "#e0d2bd" }}>Rèm Cửa Cao Cấp</span>
             </RevealLine>
             <RevealLine delay={1.6}>
-              <span style={{ color: "#c9b9a3" }}>Cho Không Gian Của Bạn</span>
+              <span style={{ color: "#d4c4ae" }}>Cho Không Gian Của Bạn</span>
             </RevealLine>
           </h1>
+
+          {/* Description */}
+          <motion.p
+            className="mt-5 text-xs md:text-sm max-w-[420px] leading-relaxed text-white/70"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.9, duration: 0.7 }}
+          >
+            Từ tư vấn đến lắp đặt — đội ngũ chuyên gia mang đến giải pháp hoàn hảo, đúng tiến độ và vượt mong đợi.
+          </motion.p>
         </div>
       </div>
-
-      {/* Description — above bottom bar, aligned left */}
-      <motion.p
-        className="absolute bottom-24 left-8 md:left-14 lg:left-20 z-30 text-xs md:text-sm max-w-[380px] leading-relaxed text-white/60"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.9, duration: 0.7 }}
-      >
-        Từ tư vấn đến lắp đặt — đội ngũ chuyên gia mang đến giải pháp hoàn hảo, đúng tiến độ và vượt mong đợi.
-      </motion.p>
-
-      {/* Top bar — slide dots */}
-      <motion.div
-        className="absolute top-0 left-0 right-0 z-30 flex items-center justify-center px-8 md:px-14 lg:px-20 pt-6"
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 2.1, duration: 0.7 }}
-      >
-        <div className="flex items-center gap-3">
-          {HERO_SLIDES.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrent(i)}
-              aria-label={`Slide ${i + 1}`}
-              className="relative h-px w-8 bg-white/20 overflow-hidden border-none p-0 cursor-pointer"
-            >
-              <span
-                className="absolute inset-0 bg-[#c9a96e] origin-left transition-transform duration-300"
-                style={{ transform: i === current ? "scaleX(1)" : "scaleX(0)" }}
-              />
-            </button>
-          ))}
-        </div>
-      </motion.div>
 
       {/* Bottom bar — buttons centered */}
       <motion.div
@@ -317,6 +305,31 @@ function Hero() {
           </Magnetic>
         </div>
       </motion.div>
+
+      {/* Top bar — slide dots */}
+      <motion.div
+        className="absolute top-0 left-0 right-0 z-30 flex items-center justify-center px-8 md:px-14 lg:px-20 pt-6"
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 2.1, duration: 0.7 }}
+      >
+        <div className="flex items-center gap-3">
+          {HERO_SLIDES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              aria-label={`Slide ${i + 1}`}
+              className="relative h-px w-8 bg-white/20 overflow-hidden border-none p-0 cursor-pointer"
+            >
+              <span
+                className="absolute inset-0 bg-[#c9a96e] origin-left transition-transform duration-300"
+                style={{ transform: i === current ? "scaleX(1)" : "scaleX(0)" }}
+              />
+            </button>
+          ))}
+        </div>
+      </motion.div>
+
     </section>
   );
 }
