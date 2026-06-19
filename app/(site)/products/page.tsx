@@ -284,7 +284,10 @@ function toProductVM(p: ProductResponse): ProductVM {
     drop: "",
     categoryId: String(p.categoryId),
     categoryTitle: p.categoryTitle ?? "",
-    image: p.imageUrl ?? undefined,
+    imageFront:  p.imageFront  ?? undefined,
+    imageLeft:   p.imageLeft   ?? undefined,
+    imageRight:  p.imageRight  ?? undefined,
+    imageDetail: p.imageDetail ?? undefined,
   };
 }
 
