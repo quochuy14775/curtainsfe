@@ -269,7 +269,7 @@ function PriceDropdown({
 
 // ─── PRODUCT CARD ─────────────────────────────────────────────────────────────
 
-type ProductVM = ProductWithCategory & { image?: string };
+type ProductVM = ProductWithCategory;
 
 // Map sản phẩm từ API về shape ProductWithCategory để cart/wishlist dùng được như cũ.
 function toProductVM(p: ProductResponse): ProductVM {
@@ -318,7 +318,7 @@ function ProductCard({
       <Link href={`/products/${product.id}`}>
         <div className="relative aspect-[4/3] mb-5 overflow-hidden bg-[#e8e0d5] rounded-2xl">
           <Image
-            src={product.image ?? PRODUCT_IMAGES[index % PRODUCT_IMAGES.length]}
+            src={product.imageFront ?? PRODUCT_IMAGES[index % PRODUCT_IMAGES.length]}
             alt={product.name}
             fill
             sizes="(max-width: 640px) 100vw, 50vw"

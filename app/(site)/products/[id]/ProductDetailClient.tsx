@@ -384,12 +384,12 @@ export function ProductDetailClient({ product, related }: Props) {
                   </>
                 )}
               </button>
-              <a
+              <Link
                 href="/#contact"
                 className="flex-1 py-4 border border-charcoal text-charcoal text-xs tracking-widest uppercase hover:border-gold hover:text-gold transition-colors duration-300 rounded-full text-center"
               >
                 Tư vấn miễn phí
-              </a>
+              </Link>
             </div>
 
             <p className="text-stone text-xs">

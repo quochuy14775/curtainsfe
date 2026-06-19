@@ -10,7 +10,7 @@ import { CustomSelect } from "@/components/ui/CustomSelect";
 import { ColorPickerPopover } from "@/components/ui/ColorPickerPopover";
 import { formatVND, parsePrice } from "@/types/product";
 import { notify } from "@/lib/toast";
-import { Package, ImagePlus, Loader2, X } from "lucide-react";
+import { Package, ImagePlus, X } from "lucide-react";
 
 export type ProductFormData = {
   name: string;
@@ -67,37 +67,67 @@ const inputCls = "w-full bg-cream/50 border border-linen rounded-xl px-4 py-3 te
 export function ProductDialog({ isOpen, onClose, onSave, initialData, title, isLoading = false }: ProductDialogProps) {
   const [form, setForm] = useState<ProductFormData>(initialData ?? EMPTY);
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
-  const [uploading, setUploading] = useState<ImageKey | null>(null);
+  // pendingFiles: file chưa upload, previews: object URL để hiện preview
+  const [pendingFiles, setPendingFiles] = useState<Partial<Record<ImageKey, File>>>({});
+  const [previews, setPreviews]         = useState<Partial<Record<ImageKey, string>>>({});
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     categoryService.getAll().then((res) => setCategories(res.value ?? [])).catch(() => {});
   }, []);
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>, slot: ImageKey) => {
+  // Giải phóng object URL khi unmount
+  useEffect(() => {
+    return () => { Object.values(previews).forEach((u) => u && URL.revokeObjectURL(u)); };
+  }, [previews]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, slot: ImageKey) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
     if (!file.type.startsWith("image/")) { notify.error("Vui lòng chọn file ảnh."); return; }
     if (file.size > 5 * 1024 * 1024)    { notify.error("Ảnh tối đa 5MB.");           return; }
-    setUploading(slot);
+
+    // Revoke URL cũ nếu có
+    if (previews[slot]) URL.revokeObjectURL(previews[slot]!);
+
+    const previewUrl = URL.createObjectURL(file);
+    setPendingFiles((p) => ({ ...p, [slot]: file }));
+    setPreviews((p)     => ({ ...p, [slot]: previewUrl }));
+    // Xóa URL cũ từ DB (nếu edit) để tránh hiển thị ảnh cũ
+    setForm((f) => ({ ...f, [slot]: "" }));
+  };
+
+  const removeImage = (slot: ImageKey) => {
+    if (previews[slot]) URL.revokeObjectURL(previews[slot]!);
+    setPendingFiles((p) => { const n = { ...p }; delete n[slot]; return n; });
+    setPreviews((p)     => { const n = { ...p }; delete n[slot]; return n; });
+    setForm((f) => ({ ...f, [slot]: "" }));
+  };
+
+  const handleSave = async () => {
+    if (!form.name || !form.categoryId) return;
+    if (!form.contactOnly && !form.price) return;
+
+    setSaving(true);
     try {
-      const url = await uploadService.uploadImage(file);
-      setForm((f) => ({ ...f, [slot]: url }));
-      notify.success("Đã tải ảnh lên.");
+      // Upload các file pending lên Cloudinary, lấy URL thật
+      const uploaded: Partial<Record<ImageKey, string>> = {};
+      for (const [slot, file] of Object.entries(pendingFiles) as [ImageKey, File][]) {
+        const url = await uploadService.uploadImage(file);
+        uploaded[slot] = url;
+      }
+      // Merge URL mới vào form (giữ URL cũ cho slot không thay đổi)
+      onSave({ ...form, ...uploaded });
     } catch {
-      notify.error("Tải ảnh thất bại.");
+      notify.error("Tải ảnh thất bại, vui lòng thử lại.");
     } finally {
-      setUploading(null);
+      setSaving(false);
     }
   };
 
-  const handleSave = () => {
-    if (!form.name || !form.categoryId) return;
-    if (!form.contactOnly && !form.price) return;
-    onSave(form);
-  };
-
   const isDisabled = !form.name || !form.categoryId || (!form.contactOnly && !form.price);
+  const isBusy = saving || isLoading;
 
   return (
     <FormDialog
@@ -108,8 +138,8 @@ export function ProductDialog({ isOpen, onClose, onSave, initialData, title, isL
       subtitle={initialData ? "Cập nhật thông tin sản phẩm" : "Điền thông tin để thêm sản phẩm mới"}
       icon={Package}
       saveLabel={initialData ? "Lưu thay đổi" : "Tạo sản phẩm"}
-      isLoading={isLoading}
-      disabled={isDisabled}
+      isLoading={isBusy}
+      disabled={isDisabled || isBusy}
       width="min(95vw, 900px)"
     >
       <div className="space-y-4">
@@ -270,31 +300,30 @@ export function ProductDialog({ isOpen, onClose, onSave, initialData, title, isL
           <label className="block text-stone text-[10px] tracking-widest uppercase mb-2">Ảnh sản phẩm</label>
           <div className="grid grid-cols-2 gap-3">
             {IMAGE_SLOTS.map(({ key, label }) => {
-              const url = form[key];
-              const isUploading = uploading === key;
+              const displayUrl = previews[key] || form[key];
               return (
                 <div key={key}>
                   <p className="text-stone text-[10px] tracking-widest uppercase mb-1">{label}</p>
-                  {url ? (
+                  {displayUrl ? (
                     <div className="relative w-full aspect-square rounded-xl overflow-hidden border border-linen">
-                      <Image src={url} alt={label} fill className="object-cover" sizes="280px" />
+                      <Image src={displayUrl} alt={label} fill className="object-cover" sizes="280px" unoptimized={!!previews[key]} />
+                      {/* Badge "Chưa lưu" cho ảnh local chưa upload */}
+                      {previews[key] && (
+                        <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] bg-gold/90 text-charcoal">Chưa lưu</span>
+                      )}
                       <button
                         type="button"
-                        onClick={() => setForm((f) => ({ ...f, [key]: "" }))}
+                        onClick={() => removeImage(key)}
                         className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-charcoal/70 text-white flex items-center justify-center hover:bg-red-500 transition-colors"
                       >
                         <X size={13} />
                       </button>
                     </div>
                   ) : (
-                    <label className={`flex flex-col items-center justify-center gap-1.5 w-full aspect-square rounded-xl border-2 border-dashed border-linen cursor-pointer hover:border-gold hover:bg-cream/40 transition-colors ${isUploading ? "pointer-events-none opacity-60" : ""}`}>
-                      {isUploading ? (
-                        <Loader2 size={18} className="text-gold animate-spin" />
-                      ) : (
-                        <ImagePlus size={18} className="text-stone/50" />
-                      )}
-                      <span className="text-stone text-[10px]">{isUploading ? "Đang tải..." : "Chọn ảnh"}</span>
-                      <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, key)} className="hidden" disabled={!!uploading} />
+                    <label className={`flex flex-col items-center justify-center gap-1.5 w-full aspect-square rounded-xl border-2 border-dashed border-linen cursor-pointer hover:border-gold hover:bg-cream/40 transition-colors ${isBusy ? "pointer-events-none opacity-60" : ""}`}>
+                      <ImagePlus size={18} className="text-stone/50" />
+                      <span className="text-stone text-[10px]">Chọn ảnh</span>
+                      <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, key)} className="hidden" disabled={isBusy} />
                     </label>
                   )}
                 </div>
