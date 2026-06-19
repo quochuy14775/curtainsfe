@@ -7,6 +7,10 @@ export type Product = {
   color: string;
   width: string;
   drop: string;
+  imageFront?:  string;
+  imageLeft?:   string;
+  imageRight?:  string;
+  imageDetail?: string;
 };
 
 export type Category = {

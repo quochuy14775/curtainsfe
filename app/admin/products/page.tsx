@@ -63,8 +63,11 @@ export default function ProductsPage() {
         price: data.contactOnly ? null : (parseInt(data.price) || 0),
         tag: data.tag || undefined,
         colorHex: data.colorHex || undefined,
-        colorGroup: data.colorGroup || undefined,
-        imageUrl: data.imageUrl || undefined,
+        colorGroup:  data.colorGroup  || undefined,
+        imageFront:  data.imageFront  || undefined,
+        imageLeft:   data.imageLeft   || undefined,
+        imageRight:  data.imageRight  || undefined,
+        imageDetail: data.imageDetail || undefined,
         categoryId: parseInt(data.categoryId),
       };
       if (selected) {
@@ -243,8 +246,11 @@ export default function ProductsPage() {
                 categoryId: String(selected.categoryId),
                 tag: selected.tag ?? "",
                 colorHex: selected.colorHex ?? "",
-                colorGroup: selected.colorGroup ?? "",
-                imageUrl: selected.imageUrl ?? "",
+                colorGroup:  selected.colorGroup  ?? "",
+                imageFront:  selected.imageFront  ?? "",
+                imageLeft:   selected.imageLeft   ?? "",
+                imageRight:  selected.imageRight  ?? "",
+                imageDetail: selected.imageDetail ?? "",
               }
             : undefined
         }

@@ -19,12 +19,7 @@ const tagColor: Record<string, string> = {
   Smart: "bg-blue-800 text-white",
 };
 
-const GALLERY_VIEWS = [
-  { label: "Chính diện", src: "/product1/chinhdien.png" },
-  { label: "Góc trái", src: "/product1/trai.png" },
-  { label: "Góc phải", src: "/product1/phai.png" },
-  { label: "Chi tiết vải", src: "/product1/chitiet.png" },
-];
+const PLACEHOLDER = "/placeholder-curtain.png";
 
 const TABS = [
   { id: "specs", label: "Thông số" },
@@ -44,15 +39,21 @@ export function ProductDetailClient({ product, related }: Props) {
   const galleryRef = useRef<HTMLDivElement>(null);
   const inView = useInView(relatedRef, { once: true, margin: "-80px" });
 
+  const galleryViews = [
+    { label: "Chính diện", src: product.imageFront  || PLACEHOLDER },
+    { label: "Góc trái",   src: product.imageLeft   || PLACEHOLDER },
+    { label: "Góc phải",   src: product.imageRight  || PLACEHOLDER },
+    { label: "Chi tiết",   src: product.imageDetail || PLACEHOLDER },
+  ].filter((v) => v.src !== PLACEHOLDER || product.imageFront == null);
+
   const [activeView, setActiveView] = useState(0);
   const [activeTab, setActiveTab] = useState<TabId>("specs");
   const [added, setAdded] = useState(false);
   // Lens kính lúp soi chất liệu vải — vị trí theo % để scale mọi kích thước
   const [lens, setLens] = useState<{ x: number; y: number } | null>(null);
 
-  // Aspect ratio: all images use 0.80:1 (5:6)
-  const aspectRatios = [0.80, 0.80, 0.80, 0.80];
-  const currentAspectRatio = aspectRatios[activeView];
+  const aspectRatio = 0.80;
+  const currentAspectRatio = aspectRatio;
 
   // Ghi nhận sản phẩm đã xem
   useEffect(() => {
@@ -117,8 +118,8 @@ export function ProductDetailClient({ product, related }: Props) {
                   className="absolute inset-0"
                 >
                   <Image
-                    src={GALLERY_VIEWS[activeView].src}
-                    alt={GALLERY_VIEWS[activeView].label}
+                    src={galleryViews[activeView].src}
+                    alt={galleryViews[activeView].label}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 552px"
                     quality={90}
@@ -130,7 +131,7 @@ export function ProductDetailClient({ product, related }: Props) {
 
               {/* View label */}
               <div className="absolute top-4 right-4 bg-black/20 backdrop-blur-sm text-white/80 text-[9px] tracking-widest uppercase px-2 py-1 rounded">
-                {GALLERY_VIEWS[activeView].label}
+                {galleryViews[activeView].label}
               </div>
 
               {/* Tag */}
@@ -174,7 +175,7 @@ export function ProductDetailClient({ product, related }: Props) {
                   <div
                     className="absolute inset-0"
                     style={{
-                      backgroundImage: `url(${GALLERY_VIEWS[activeView].src})`,
+                      backgroundImage: `url(${galleryViews[activeView].src})`,
                       backgroundSize: "300%",
                       backgroundPosition: `${lens.x}% ${lens.y}%`,
                     }}
@@ -195,7 +196,7 @@ export function ProductDetailClient({ product, related }: Props) {
 
             {/* Thumbnails */}
             <div className="grid grid-cols-4 gap-2">
-              {GALLERY_VIEWS.map((view, i) => (
+              {galleryViews.map((view, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveView(i)}
@@ -204,7 +205,7 @@ export function ProductDetailClient({ product, related }: Props) {
                       ? "border-gold scale-[1.03] shadow-md"
                       : "border-transparent opacity-60 hover:opacity-90"
                   }`}
-                  style={{ aspectRatio: aspectRatios[i] }}
+                  style={{ aspectRatio: aspectRatio }}
                   aria-label={view.label}
                 >
                   <Image

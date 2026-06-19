@@ -25,7 +25,10 @@ export type ProductResponse = {
   tag: string | null;
   colorHex: string | null;
   colorGroup: string | null;
-  imageUrl: string | null;
+  imageFront:  string | null;
+  imageLeft:   string | null;
+  imageRight:  string | null;
+  imageDetail: string | null;
   categoryId: number;
   categoryTitle: string | null;
   isActived: boolean;
@@ -38,7 +41,10 @@ export type ProductRequest = {
   tag?: string;
   colorHex?: string;
   colorGroup?: string;
-  imageUrl?: string;
+  imageFront?:  string;
+  imageLeft?:   string;
+  imageRight?:  string;
+  imageDetail?: string;
   categoryId: number;
 };
 
