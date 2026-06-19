@@ -110,47 +110,9 @@ export function ProductDialog({ isOpen, onClose, onSave, initialData, title, isL
       saveLabel={initialData ? "Lưu thay đổi" : "Tạo sản phẩm"}
       isLoading={isLoading}
       disabled={isDisabled}
-      width="min(95vw, 600px)"
+      width="min(95vw, 900px)"
     >
       <div className="space-y-4">
-
-        {/* Ảnh sản phẩm — 4 góc */}
-        <div>
-          <label className="block text-stone text-[10px] tracking-widest uppercase mb-2">Ảnh sản phẩm</label>
-          <div className="grid grid-cols-2 gap-3">
-            {IMAGE_SLOTS.map(({ key, label }) => {
-              const url = form[key];
-              const isUploading = uploading === key;
-              return (
-                <div key={key}>
-                  <p className="text-stone text-[10px] tracking-widest uppercase mb-1">{label}</p>
-                  {url ? (
-                    <div className="relative w-full aspect-square rounded-xl overflow-hidden border border-linen">
-                      <Image src={url} alt={label} fill className="object-cover" sizes="280px" />
-                      <button
-                        type="button"
-                        onClick={() => setForm((f) => ({ ...f, [key]: "" }))}
-                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-charcoal/70 text-white flex items-center justify-center hover:bg-red-500 transition-colors"
-                      >
-                        <X size={13} />
-                      </button>
-                    </div>
-                  ) : (
-                    <label className={`flex flex-col items-center justify-center gap-1.5 w-full aspect-square rounded-xl border-2 border-dashed border-linen cursor-pointer hover:border-gold hover:bg-cream/40 transition-colors ${isUploading ? "pointer-events-none opacity-60" : ""}`}>
-                      {isUploading ? (
-                        <Loader2 size={18} className="text-gold animate-spin" />
-                      ) : (
-                        <ImagePlus size={18} className="text-stone/50" />
-                      )}
-                      <span className="text-stone text-[10px]">{isUploading ? "Đang tải..." : "Chọn ảnh"}</span>
-                      <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, key)} className="hidden" disabled={!!uploading} />
-                    </label>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
 
         {/* Tên */}
         <div>
@@ -301,6 +263,44 @@ export function ProductDialog({ isOpen, onClose, onSave, initialData, title, isL
             placeholder="Tên nhóm màu (VD: Vàng Gold, Xanh Navy...)"
             className={inputCls}
           />
+        </div>
+
+        {/* Ảnh sản phẩm — 4 góc */}
+        <div>
+          <label className="block text-stone text-[10px] tracking-widest uppercase mb-2">Ảnh sản phẩm</label>
+          <div className="grid grid-cols-2 gap-3">
+            {IMAGE_SLOTS.map(({ key, label }) => {
+              const url = form[key];
+              const isUploading = uploading === key;
+              return (
+                <div key={key}>
+                  <p className="text-stone text-[10px] tracking-widest uppercase mb-1">{label}</p>
+                  {url ? (
+                    <div className="relative w-full aspect-square rounded-xl overflow-hidden border border-linen">
+                      <Image src={url} alt={label} fill className="object-cover" sizes="280px" />
+                      <button
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, [key]: "" }))}
+                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-charcoal/70 text-white flex items-center justify-center hover:bg-red-500 transition-colors"
+                      >
+                        <X size={13} />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className={`flex flex-col items-center justify-center gap-1.5 w-full aspect-square rounded-xl border-2 border-dashed border-linen cursor-pointer hover:border-gold hover:bg-cream/40 transition-colors ${isUploading ? "pointer-events-none opacity-60" : ""}`}>
+                      {isUploading ? (
+                        <Loader2 size={18} className="text-gold animate-spin" />
+                      ) : (
+                        <ImagePlus size={18} className="text-stone/50" />
+                      )}
+                      <span className="text-stone text-[10px]">{isUploading ? "Đang tải..." : "Chọn ảnh"}</span>
+                      <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, key)} className="hidden" disabled={!!uploading} />
+                    </label>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
       </div>
