@@ -19,6 +19,9 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://curtainsfe.vercel.app"),
+  verification: {
+    google: "74qbB2yovjS9FFaLNc53q9CzdiUhZT1SqZEMYVbqZ74",
+  },
   title: "Ngọc Huệ — Rèm Cửa Cao Cấp",
   description:
     "Khám phá bộ sưu tập rèm cửa cao cấp. Tư vấn tận nhà, lắp đặt chuyên nghiệp.",
