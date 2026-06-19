@@ -7,12 +7,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { SlidersHorizontal, ChevronDown, ArrowLeft, ShoppingBag, Check, LayoutGrid, Tag as TagIcon, Banknote } from "lucide-react";
 
-const PRODUCT_IMAGES = [
-  "/products/Rem-cua-mau-vang-dong-mang-phong-cach-hoang-gia-sang-trong_1752891269-1024x768.jpg",
-  "/products/rem-cua-cho-van-phong-cong-ty-tphcm-chong-choi-man-hinh-toi-uu-anh-sang_1776927048.jpg",
-  "/products/Rem-cua-1-lop-nhe-nhang-cho-can-ho-nho_1756178119-1024x768.jpeg",
-  "/products/TOP_6_LO_I_REM_C_A_PH_BI_N_BONARIO_3_1024x1024.webp",
-];
 import type { ProductWithCategory } from "@/lib/data";
 import { productService } from "@/services/productService";
 import { categoryService } from "@/services/categoryService";
@@ -316,15 +310,17 @@ function ProductCard({
       className="group"
     >
       <Link href={`/products/${product.id}`}>
-        <div className="relative aspect-[4/3] mb-5 overflow-hidden bg-[#e8e0d5] rounded-2xl">
-          <Image
-            src={product.imageFront ?? PRODUCT_IMAGES[index % PRODUCT_IMAGES.length]}
-            alt={product.name}
-            fill
-            sizes="(max-width: 640px) 100vw, 50vw"
-            quality={85}
-            className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.04]"
-          />
+        <div className="relative aspect-[3/4] mb-3 overflow-hidden bg-[#e8e0d5] rounded-xl">
+          {product.imageFront && (
+            <Image
+              src={product.imageFront}
+              alt={product.name}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              quality={85}
+              className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.04]"
+            />
+          )}
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-tr from-transparent via-white/[0.06] to-transparent" />
 
           {product.tag && (
@@ -602,7 +598,7 @@ function ProductsContent() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-8 lg:gap-12 xl:gap-14"
+              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 lg:gap-6"
             >
               {paginated.map((product, i) => (
                 <ProductCard key={product.id} product={product} index={i} />

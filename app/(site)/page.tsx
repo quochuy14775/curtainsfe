@@ -17,14 +17,9 @@ import {
   Palette,
   Hammer,
 } from "lucide-react";
-import { categories } from "@/lib/data";
-
-const COLLECTION_IMAGES: Record<string, string> = {
-  "luxury-fabric": "/products/Rem-cua-mau-vang-dong-mang-phong-cach-hoang-gia-sang-trong_1752891269-1024x768.jpg",
-  "silk":          "/products/Rem-cua-1-lop-nhe-nhang-cho-can-ho-nho_1756178119-1024x768.jpeg",
-  "roller":        "/products/rem-cua-cho-van-phong-cong-ty-tphcm-chong-choi-man-hinh-toi-uu-anh-sang_1776927048.jpg",
-  "rainbow":       "/products/TOP_6_LO_I_REM_C_A_PH_BI_N_BONARIO_3_1024x1024.webp",
-};
+import { categoryService } from "@/services/categoryService";
+import type { CategoryResponse } from "@/types/category";
+import { getCategoryAccent } from "@/types/category";
 import { appointmentService } from "@/services/appointmentService";
 import { useContactInfo } from "@/lib/useContactInfo";
 import { telHref } from "@/types/contact";
@@ -243,7 +238,7 @@ function Hero() {
 
       {/* Content — khối nội dung gom về giữa-trái */}
       <div ref={content} className="relative z-30 h-full flex items-center">
-        <div className="px-8 md:px-14 lg:px-20 w-full max-w-2xl">
+        <div className="px-8 md:px-14 lg:px-20 w-full">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -267,7 +262,7 @@ function Hero() {
 
           {/* Description */}
           <motion.p
-            className="mt-5 text-xs md:text-sm max-w-[420px] leading-relaxed text-white/70"
+            className="mt-10 text-xs md:text-sm max-w-[420px] leading-relaxed text-white/70"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.9, duration: 0.7 }}
@@ -578,6 +573,18 @@ function HowItWorks() {
 function Collections() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
+  const [cats, setCats] = useState<CategoryResponse[]>([]);
+
+  useEffect(() => {
+    categoryService.getAll()
+      .then((res) => {
+        const sorted = (res.value ?? [])
+          .sort((a, b) => b.productCount - a.productCount)
+          .slice(0, 4);
+        setCats(sorted);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <section id="collections" className="py-28 bg-[#fdfbf8]">
@@ -617,76 +624,62 @@ function Collections() {
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 px-4 md:px-8">
-          {categories.map((cat, i) => (
-            <motion.div
-              key={cat.id}
-              initial={{ opacity: 0, y: 30 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.7, delay: 0.1 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <Link
-                href={`/products?category=${cat.id}`}
-                className="group relative aspect-[4/3] overflow-hidden rounded-2xl flex flex-col justify-between p-5 md:p-8 cursor-pointer block"
+        <div className="max-w-[1400px] mx-auto grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 px-6 lg:px-12">
+          {cats.map((cat, i) => {
+            const accent = getCategoryAccent(cat.id);
+            return (
+              <motion.div
+                key={cat.id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.7, delay: 0.1 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
               >
-                {/* Background image */}
-                <Image
-                  src={COLLECTION_IMAGES[cat.id] ?? "/previews/decor.png"}
-                  alt={cat.title}
-                  fill
-                  sizes="(max-width: 768px) 50vw, 25vw"
-                  quality={85}
-                  className="object-cover object-center transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
-                />
-
-                {/* Typography lớn fill card — ẩn mặc định, hiện khi hover */}
-                <div
-                  className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
+                <Link
+                  href={`/products?category=${cat.id}`}
+                  className="group relative aspect-[3/4] overflow-hidden rounded-xl flex flex-col justify-between p-3 md:p-4 cursor-pointer block bg-[#2c2c2c]"
                 >
-                  <span
-                    className="font-heading leading-none whitespace-nowrap opacity-0 group-hover:opacity-[0.13] scale-75 group-hover:scale-100 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                    style={{
-                      fontSize: "clamp(3rem,10vw,6rem)",
-                      color: cat.accent,
-                      writingMode: "vertical-rl",
-                      textOrientation: "mixed",
-                      transform: "rotate(180deg)",
-                    }}
-                  >
-                    {cat.title}
-                  </span>
-                </div>
+                  {/* Background image */}
+                  {(cat.coverImage || cat.imageUrl) && (
+                    <Image
+                      src={cat.coverImage ?? cat.imageUrl!}
+                      alt={cat.title ?? ""}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                      quality={85}
+                      className="object-cover object-center transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
+                    />
+                  )}
 
-                {/* Vignette */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                  {/* Dim overlay giống hero */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/20 transition-opacity duration-500 group-hover:from-black/85 group-hover:via-black/40" />
 
-                {/* Top — accent dot + count */}
-                <div className="relative flex items-center justify-between">
-                  <div
-                    className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: cat.accent, boxShadow: `0 0 8px ${cat.accent}80` }}
-                  />
-                  <span className="text-[9px] md:text-[10px] tracking-[0.3em] uppercase" style={{ color: `${cat.accent}99` }}>
-                    {cat.count}
-                  </span>
-                </div>
-
-                {/* Bottom — title + subtitle + cta */}
-                <div className="relative">
-                  <h3 className="font-heading text-[#fdfbf8] leading-tight mb-1 text-lg md:text-xl lg:text-2xl group-hover:translate-y-[-2px] transition-transform duration-300">
-                    {cat.title}
-                  </h3>
-                  <p className="text-[#fdfbf8]/50 text-xs md:text-sm">{cat.subtitle}</p>
-                  <div
-                    className="mt-3 inline-flex items-center gap-1.5 text-[10px] tracking-widest uppercase opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300"
-                    style={{ color: cat.accent }}
-                  >
-                    Khám phá <ArrowRight size={10} />
+                  {/* Top — dot + product count */}
+                  <div className="relative flex items-center justify-between">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: accent, boxShadow: `0 0 8px ${accent}80` }} />
+                    <span className="text-xs tracking-[0.25em] uppercase text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]">
+                      {cat.productCount} sản phẩm
+                    </span>
                   </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+
+                  {/* Bottom — tên + mô tả + cta */}
+                  <div className="relative">
+                    <h3 className="font-heading text-[#fdfbf8] leading-tight mb-1 text-xl md:text-2xl">
+                      {cat.title}
+                    </h3>
+                    {cat.subtitle && (
+                      <p className="text-[#fdfbf8]/60 text-xs md:text-sm leading-relaxed">{cat.subtitle}</p>
+                    )}
+                    <div
+                      className="mt-3 inline-flex items-center gap-1.5 text-[10px] tracking-widest uppercase opacity-70 group-hover:opacity-100 transition-opacity duration-300"
+                      style={{ color: accent }}
+                    >
+                      Khám phá <ArrowRight size={10} />
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

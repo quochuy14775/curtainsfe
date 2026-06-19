@@ -19,11 +19,14 @@ export type CategoryResponse = {
   title: string;
   subtitle: string | null;
   productCount: number;
+  imageUrl: string | null;
+  coverImage: string | null;
 };
 
 export type CategoryRequest = {
   title: string;
   subtitle?: string;
+  imageUrl?: string;
 };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
