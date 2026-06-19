@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   images: {
     qualities: [75, 90, 100],
+    remotePatterns: [
+      { protocol: "https", hostname: "res.cloudinary.com" },
+    ],
   },
   // Proxy mọi request /api/* sang backend (Render) ở phía server.
   // Nhờ vậy browser chỉ thấy domain Vercel => same-origin, cookie thành

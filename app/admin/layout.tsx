@@ -4,13 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Toaster } from "sonner";
-import { LayoutDashboard, ClipboardList, Package, Tag, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, ClipboardList, Package, Tag, Phone, LogOut, Menu, X } from "lucide-react";
+import { AdminTour } from "@/components/admin/AdminTour";
 
 const navItems = [
-  { href: "/admin/dashboard", label: "Tổng quan", icon: LayoutDashboard },
-  { href: "/admin/orders", label: "Đơn tư vấn", icon: ClipboardList },
-  { href: "/admin/products", label: "Sản phẩm", icon: Package },
-  { href: "/admin/categories", label: "Phân loại", icon: Tag },
+  { href: "/admin/dashboard", label: "Tổng quan", icon: LayoutDashboard, tour: "dashboard" },
+  { href: "/admin/orders", label: "Đơn tư vấn", icon: ClipboardList, tour: "orders" },
+  { href: "/admin/products", label: "Sản phẩm", icon: Package, tour: "products" },
+  { href: "/admin/categories", label: "Phân loại", icon: Tag, tour: "categories" },
+  { href: "/admin/contact", label: "Liên hệ", icon: Phone, tour: "contact" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -28,6 +30,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen flex bg-[#f4f2ef]">
+      <AdminTour />
       {/* Sidebar overlay on mobile */}
       {sidebarOpen && (
         <div
@@ -43,7 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }`}
       >
         {/* Brand */}
-        <div className="px-7 py-7 border-b border-white/10">
+        <div className="px-7 py-7 border-b border-white/10" data-tour="brand">
           <Link href="/admin/dashboard" onClick={() => setSidebarOpen(false)}>
             <p className="font-heading text-lg text-warm-white">Maison</p>
             <p className="font-heading text-[10px] tracking-[0.3em] text-gold uppercase">Drapé Admin</p>
@@ -52,12 +55,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Nav */}
         <nav className="flex-1 px-4 py-6 space-y-1">
-          {navItems.map(({ href, label, icon: Icon }) => {
+          {navItems.map(({ href, label, icon: Icon, tour }) => {
             const active = pathname.startsWith(href);
             return (
               <Link
                 key={href}
                 href={href}
+                data-tour={tour}
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-colors duration-200 ${
                   active

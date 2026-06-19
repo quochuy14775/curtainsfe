@@ -13,7 +13,11 @@ const PRODUCT_IMAGES = [
   "/products/Rem-cua-1-lop-nhe-nhang-cho-can-ho-nho_1756178119-1024x768.jpeg",
   "/products/TOP_6_LO_I_REM_C_A_PH_BI_N_BONARIO_3_1024x1024.webp",
 ];
-import { categories, getAllProducts } from "@/lib/data";
+import type { ProductWithCategory } from "@/lib/data";
+import { productService } from "@/services/productService";
+import { categoryService } from "@/services/categoryService";
+import { formatVND, type ProductResponse } from "@/types/product";
+import type { CategoryResponse } from "@/types/category";
 import { useCartStore } from "@/lib/cart-store";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { RecentlyViewed } from "@/components/sections/RecentlyViewed";
@@ -265,11 +269,30 @@ function PriceDropdown({
 
 // ─── PRODUCT CARD ─────────────────────────────────────────────────────────────
 
+type ProductVM = ProductWithCategory & { image?: string };
+
+// Map sản phẩm từ API về shape ProductWithCategory để cart/wishlist dùng được như cũ.
+function toProductVM(p: ProductResponse): ProductVM {
+  return {
+    id: p.id,
+    name: p.name,
+    material: p.material,
+    price: p.price != null ? formatVND(p.price) : "Liên hệ",
+    tag: p.tag ?? undefined,
+    color: p.colorHex ?? "#c9a96e",
+    width: "",
+    drop: "",
+    categoryId: String(p.categoryId),
+    categoryTitle: p.categoryTitle ?? "",
+    image: p.imageUrl ?? undefined,
+  };
+}
+
 function ProductCard({
   product,
   index,
 }: {
-  product: ReturnType<typeof getAllProducts>[number];
+  product: ProductVM;
   index: number;
 }) {
   const { addItem } = useCartStore();
@@ -292,7 +315,7 @@ function ProductCard({
       <Link href={`/products/${product.id}`}>
         <div className="relative aspect-[4/3] mb-5 overflow-hidden bg-[#e8e0d5] rounded-2xl">
           <Image
-            src={PRODUCT_IMAGES[index % PRODUCT_IMAGES.length]}
+            src={product.image ?? PRODUCT_IMAGES[index % PRODUCT_IMAGES.length]}
             alt={product.name}
             fill
             sizes="(max-width: 640px) 100vw, 50vw"
@@ -346,8 +369,14 @@ function ProductCard({
         </Link>
         <div className="flex items-center justify-between">
           <p className="text-[#2c2c2c] font-medium">
-            {product.price}₫
-            <span className="text-[#8c8480] text-xs font-normal ml-1">/m²</span>
+            {product.price === "Liên hệ" ? (
+              "Liên hệ"
+            ) : (
+              <>
+                {product.price}₫
+                <span className="text-[#8c8480] text-xs font-normal ml-1">/m²</span>
+              </>
+            )}
           </p>
           <div
             className="w-5 h-5 rounded-full border-2 border-[#e8e0d5] shadow-sm"
@@ -369,12 +398,31 @@ function ProductsContent() {
   const [sort, setSort] = useState("default");
   const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
     const cat = searchParams.get("category");
-    return cat ? [cat] : [];
+    // Chỉ nhận id danh mục dạng số (khớp với API); bỏ qua slug cũ.
+    return cat && /^\d+$/.test(cat) ? [cat] : [];
   });
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([PRICE_MIN, PRICE_MAX]);
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 6;
+
+  // Dữ liệu thật từ API
+  const [products, setProducts] = useState<ProductVM[]>([]);
+  const [cats, setCats] = useState<CategoryResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    Promise.all([productService.getAll(), categoryService.getAll()])
+      .then(([prodRes, catRes]) => {
+        if (!alive) return;
+        setProducts((prodRes.value ?? []).map(toProductVM));
+        setCats(catRes.value ?? []);
+      })
+      .catch(() => { /* giữ danh sách rỗng nếu lỗi */ })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, []);
 
   const toggleCategory = (id: string) => {
     setSelectedCategories((prev) =>
@@ -389,8 +437,7 @@ function ProductsContent() {
     setPage(1);
   };
 
-  const allProducts = getAllProducts();
-  let filtered = allProducts;
+  let filtered = products;
   if (selectedCategories.length > 0)
     filtered = filtered.filter((p) => selectedCategories.includes(p.categoryId));
   if (selectedTags.length > 0)
@@ -409,7 +456,7 @@ function ProductsContent() {
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const sortLabel = SORT_OPTIONS.find((o) => o.value === sort)?.label ?? "Mặc định";
-  const categoryOptions = categories.map((c) => ({ value: c.id, label: c.title }));
+  const categoryOptions = cats.map((c) => ({ value: String(c.id), label: c.title ?? "" }));
   const tagOptions = ALL_TAGS.map((t) => ({ value: t, label: t }));
 
   return (
@@ -453,7 +500,7 @@ function ProductsContent() {
             >
               Bộ Sưu Tập
               <br />
-              <em className="text-gold not-italic">{allProducts.length} sản phẩm</em>
+              <em className="text-gold not-italic">{products.length} sản phẩm</em>
             </motion.h1>
           </div>
         </div>
@@ -560,7 +607,13 @@ function ProductsContent() {
             </motion.div>
           </AnimatePresence>
 
-          {filtered.length === 0 && (
+          {loading && (
+            <div className="flex items-center justify-center py-32">
+              <div className="w-px h-16 bg-gradient-to-b from-gold to-transparent animate-pulse" />
+            </div>
+          )}
+
+          {!loading && filtered.length === 0 && (
             <div className="flex flex-col items-center justify-center py-32 gap-4">
               <p className="font-heading text-2xl text-[#2c2c2c]">Không có sản phẩm</p>
               <button

@@ -61,12 +61,12 @@ export function Hero() {
       {/* Content */}
       <div ref={contentRef} className="relative z-30 h-full flex flex-col items-center justify-center text-center px-6">
         <p className="text-gold text-xs tracking-[0.4em] uppercase mb-8">Bộ sưu tập 2026</p>
-        <h1 className="font-heading text-5xl md:text-7xl lg:text-8xl text-warm-white leading-[1.1] mb-8 max-w-4xl">
+        <h1 className="font-heading text-5xl md:text-7xl lg:text-8xl text-warm-white leading-[1.1] mb-8 max-w-5xl">
           Vẻ Đẹp <em className="text-gold not-italic">Tinh Tế</em>
           <br />
           Trong Từng Nếp Gấp
         </h1>
-        <p className="text-warm-white/60 text-lg md:text-xl max-w-xl leading-relaxed mb-12">
+        <p className="text-warm-white/60 text-lg md:text-xl max-w-2xl leading-relaxed mb-12">
           Rèm cửa cao cấp — nơi chất liệu sang trọng và thiết kế đỉnh cao biến không gian sống thành tác phẩm nghệ thuật.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 items-center">

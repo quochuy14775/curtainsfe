@@ -1,13 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { categoryService } from "@/services/categoryService";
+import { uploadService } from "@/services/uploadService";
 import type { CategoryResponse } from "@/types/category";
 import { FormDialog } from "@/components/ui/FormDialog";
 import { CustomSelect } from "@/components/ui/CustomSelect";
 import { ColorPickerPopover } from "@/components/ui/ColorPickerPopover";
 import { formatVND, parsePrice } from "@/types/product";
-import { Package } from "lucide-react";
+import { notify } from "@/lib/toast";
+import { Package, ImagePlus, Loader2, X } from "lucide-react";
 
 export type ProductFormData = {
   name: string;
@@ -18,6 +21,7 @@ export type ProductFormData = {
   tag?: string;
   colorHex?: string;
   colorGroup?: string;
+  imageUrl?: string;
 };
 
 interface ProductDialogProps {
@@ -43,7 +47,7 @@ const PRESET_COLORS = [
 ];
 const EMPTY: ProductFormData = {
   name: "", material: "", price: "", contactOnly: false,
-  categoryId: "", tag: "", colorHex: "", colorGroup: "",
+  categoryId: "", tag: "", colorHex: "", colorGroup: "", imageUrl: "",
 };
 
 const inputCls = "w-full bg-cream/50 border border-linen rounded-xl px-4 py-3 text-charcoal placeholder:text-stone/40 focus:border-gold outline-none transition-colors text-sm";
@@ -51,10 +55,35 @@ const inputCls = "w-full bg-cream/50 border border-linen rounded-xl px-4 py-3 te
 export function ProductDialog({ isOpen, onClose, onSave, initialData, title, isLoading = false }: ProductDialogProps) {
   const [form, setForm] = useState<ProductFormData>(initialData ?? EMPTY);
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     categoryService.getAll().then((res) => setCategories(res.value ?? [])).catch(() => {});
   }, []);
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // cho phép chọn lại cùng file
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      notify.error("Vui lòng chọn file ảnh.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      notify.error("Ảnh tối đa 5MB.");
+      return;
+    }
+    setUploading(true);
+    try {
+      const url = await uploadService.uploadImage(file);
+      setForm((f) => ({ ...f, imageUrl: url }));
+      notify.success("Đã tải ảnh lên.");
+    } catch {
+      notify.error("Tải ảnh thất bại.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSave = () => {
     if (!form.name || !form.categoryId) return;
@@ -78,6 +107,39 @@ export function ProductDialog({ isOpen, onClose, onSave, initialData, title, isL
       width="min(95vw, 600px)"
     >
       <div className="space-y-4">
+
+        {/* Ảnh sản phẩm */}
+        <div>
+          <label className="block text-stone text-[10px] tracking-widest uppercase mb-1.5">Ảnh sản phẩm</label>
+          {form.imageUrl ? (
+            <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden border border-linen group">
+              <Image src={form.imageUrl} alt="Ảnh sản phẩm" fill className="object-cover" sizes="600px" />
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, imageUrl: "" })}
+                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-charcoal/70 text-white flex items-center justify-center hover:bg-red-500 transition-colors"
+                aria-label="Xóa ảnh"
+              >
+                <X size={15} />
+              </button>
+            </div>
+          ) : (
+            <label className={`flex flex-col items-center justify-center gap-2 w-full aspect-[4/3] rounded-xl border-2 border-dashed border-linen cursor-pointer hover:border-gold hover:bg-cream/40 transition-colors ${uploading ? "pointer-events-none opacity-60" : ""}`}>
+              {uploading ? (
+                <>
+                  <Loader2 size={22} className="text-gold animate-spin" />
+                  <span className="text-stone text-xs">Đang tải lên...</span>
+                </>
+              ) : (
+                <>
+                  <ImagePlus size={22} className="text-stone/50" />
+                  <span className="text-stone text-xs">Chọn ảnh (tối đa 5MB)</span>
+                </>
+              )}
+              <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" disabled={uploading} />
+            </label>
+          )}
+        </div>
 
         {/* Tên */}
         <div>

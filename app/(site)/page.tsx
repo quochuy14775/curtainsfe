@@ -26,6 +26,8 @@ const COLLECTION_IMAGES: Record<string, string> = {
   "rainbow":       "/products/TOP_6_LO_I_REM_C_A_PH_BI_N_BONARIO_3_1024x1024.webp",
 };
 import { appointmentService } from "@/services/appointmentService";
+import { useContactInfo } from "@/lib/useContactInfo";
+import { telHref } from "@/types/contact";
 import { Magnetic } from "@/components/ui/Magnetic";
 import { FabricAtelier } from "@/components/sections/FabricAtelier";
 import { PriceEstimator } from "@/components/sections/PriceEstimator";
@@ -844,6 +846,7 @@ function ContactCTA() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const contact = useContactInfo();
 
   const field = (key: keyof FormState) => ({
     value: form[key],
@@ -930,11 +933,11 @@ function ContactCTA() {
             >
               <p className="text-[#8c8480] text-xs tracking-widest uppercase mb-4">Hoặc liên hệ trực tiếp</p>
               <a
-                href="tel:+84901234567"
+                href={telHref(contact.phone)}
                 className="inline-flex items-center gap-3 font-heading text-2xl text-[#2c2c2c] hover:text-gold transition-colors duration-300"
               >
                 <Phone size={20} className="text-gold" />
-                0901 234 567
+                {contact.phone}
               </a>
             </motion.div>
           </div>

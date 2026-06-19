@@ -64,6 +64,7 @@ export default function ProductsPage() {
         tag: data.tag || undefined,
         colorHex: data.colorHex || undefined,
         colorGroup: data.colorGroup || undefined,
+        imageUrl: data.imageUrl || undefined,
         categoryId: parseInt(data.categoryId),
       };
       if (selected) {
@@ -243,6 +244,7 @@ export default function ProductsPage() {
                 tag: selected.tag ?? "",
                 colorHex: selected.colorHex ?? "",
                 colorGroup: selected.colorGroup ?? "",
+                imageUrl: selected.imageUrl ?? "",
               }
             : undefined
         }

@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useContactInfo } from "@/lib/useContactInfo";
+import { telHref } from "@/types/contact";
 
 export function Footer() {
+  const contact = useContactInfo();
   return (
     <footer className="bg-charcoal text-warm-white/80">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-20">
@@ -8,7 +13,7 @@ export function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="mb-6">
-              <p className="font-heading text-2xl text-warm-white">Maison Drapé</p>
+              <p className="font-heading text-2xl text-warm-white">{contact.companyName}</p>
               <p className="text-xs tracking-[0.3em] text-gold uppercase mt-1">
                 Luxury Curtains
               </p>
@@ -46,16 +51,16 @@ export function Footer() {
               Liên hệ
             </h4>
             <ul className="space-y-3 text-sm text-warm-white/60">
-              <li>123 Đường Nội Thất, Q.1</li>
-              <li>TP. Hồ Chí Minh</li>
+              <li>{contact.addressLine1}</li>
+              <li>{contact.addressLine2}</li>
               <li className="pt-2">
-                <a href="tel:+84901234567" className="hover:text-warm-white transition-colors">
-                  0901 234 567
+                <a href={telHref(contact.phone)} className="hover:text-warm-white transition-colors">
+                  {contact.phone}
                 </a>
               </li>
               <li>
-                <a href="mailto:hello@maisondrage.vn" className="hover:text-warm-white transition-colors">
-                  hello@maisondrage.vn
+                <a href={`mailto:${contact.email}`} className="hover:text-warm-white transition-colors">
+                  {contact.email}
                 </a>
               </li>
             </ul>
