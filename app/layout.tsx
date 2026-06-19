@@ -18,12 +18,22 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Ngọc Huệ — Luxury Curtains & Drapes",
+  metadataBase: new URL("https://curtainsfe.vercel.app"),
+  title: "Ngọc Huệ — Rèm Cửa Cao Cấp",
   description:
-    "Khám phá bộ sưu tập rèm cửa cao cấp. Nơi nghệ thuật và không gian sống hòa quyện.",
+    "Khám phá bộ sưu tập rèm cửa cao cấp. Tư vấn tận nhà, lắp đặt chuyên nghiệp.",
   icons: {
     icon: "/favicon.png",
     apple: "/favicon.png",
+  },
+  openGraph: {
+    title: "Ngọc Huệ — Rèm Cửa Cao Cấp",
+    description:
+      "Khám phá bộ sưu tập rèm cửa cao cấp. Tư vấn tận nhà, lắp đặt chuyên nghiệp.",
+    url: "https://curtainsfe.vercel.app",
+    siteName: "Ngọc Huệ Rèm Màn",
+    locale: "vi_VN",
+    type: "website",
   },
 };
 

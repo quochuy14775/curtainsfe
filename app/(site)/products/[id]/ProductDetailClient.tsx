@@ -272,7 +272,7 @@ export function ProductDetailClient({ product, related }: Props) {
                     transition={{ duration: 0.2 }}
                     className="pt-5"
                   >
-                    <div className="flex gap-8">
+                    <div className="grid grid-cols-2 gap-x-8 gap-y-5 sm:flex sm:gap-8">
                       <div>
                         <p className="text-stone text-[10px] tracking-widest uppercase mb-1">Chất liệu</p>
                         <p className="font-heading text-charcoal text-sm">{product.material}</p>

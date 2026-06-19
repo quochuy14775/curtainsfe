@@ -43,7 +43,7 @@ export function RecentlyViewed({ excludeId }: { excludeId?: number }) {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: i * 0.06 }}
-              className="flex-none w-40 group"
+              className="flex-none w-32 sm:w-40 group"
             >
               <Link href={`/products/${p.id}`}>
                 <div className="relative aspect-[3/4] mb-3 overflow-hidden rounded-xl">
