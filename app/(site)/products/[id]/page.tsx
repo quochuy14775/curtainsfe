@@ -58,7 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const p = await fetchProduct(Number(id));
   if (!p) return { title: "Sản phẩm không tồn tại" };
   return {
-    title: `${p.name} — Maison Drapé`,
+    title: `${p.name} — Rèm Màn Ngọc Huệ`,
     description: `${p.material} · ${p.price ?? "Liên hệ"}₫/m²`,
   };
 }

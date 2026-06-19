@@ -59,7 +59,7 @@ export function SplashScreen() {
             transition={{ duration: 0.6, delay: 0.7 }}
             className="mt-4 text-gold/60 text-[10px] tracking-[0.5em] uppercase"
           >
-            Luxury Curtains
+            Rèm Màn Ngọc Huệ
           </motion.p>
 
           {/* Gold divider draw */}

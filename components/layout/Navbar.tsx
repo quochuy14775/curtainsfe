@@ -72,9 +72,14 @@ export function Navbar() {
             {/*  className="rounded-full object-cover"*/}
             {/*  priority*/}
             {/*/>*/}
-            <span className="font-heading text-xs tracking-[0.3em] text-gold uppercase">
-              Ngọc Huệ Rèm màn
-            </span>
+            <div className="flex flex-col leading-tight">
+              <span className={`font-heading text-sm tracking-[0.25em] uppercase transition-colors duration-300 ${scrolled ? "text-charcoal" : "text-gold"}`}>
+                Ngọc Huệ
+              </span>
+              <span className={`font-heading text-[10px] tracking-[0.3em] uppercase transition-colors duration-300 ${scrolled ? "text-stone" : "text-gold/60"}`}>
+                Rèm Màn
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Nav */}

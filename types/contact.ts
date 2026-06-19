@@ -24,7 +24,7 @@ export type ContactInfoRequest = {
 
 // Giá trị mặc định — dùng khi API lỗi hoặc trường để trống, để trang chủ không bao giờ trắng.
 export const DEFAULT_CONTACT: ContactInfo = {
-  companyName: "Maison Drapé",
+  companyName: "Ngọc Huệ",
   phone: "0901 234 567",
   email: "hello@maisondrage.vn",
   addressLine1: "123 Đường Nội Thất, Q.1",

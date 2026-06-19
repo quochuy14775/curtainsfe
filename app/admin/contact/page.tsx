@@ -16,7 +16,7 @@ type Field = {
 };
 
 const FIELDS: Field[] = [
-  { key: "companyName", label: "Tên thương hiệu", placeholder: "Maison Drapé", icon: Building2 },
+  { key: "companyName", label: "Tên thương hiệu", placeholder: "Ngọc Huệ", icon: Building2 },
   { key: "phone", label: "Số điện thoại", placeholder: "0901 234 567", icon: Phone, hint: "Hiển thị ở footer và mục liên hệ trang chủ." },
   { key: "email", label: "Email", placeholder: "hello@maisondrage.vn", icon: Mail },
   { key: "addressLine1", label: "Địa chỉ (dòng 1)", placeholder: "123 Đường Nội Thất, Q.1", icon: MapPin },

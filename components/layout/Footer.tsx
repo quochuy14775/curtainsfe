@@ -15,7 +15,7 @@ export function Footer() {
             <div className="mb-6">
               <p className="font-heading text-2xl text-warm-white">{contact.companyName}</p>
               <p className="text-xs tracking-[0.3em] text-gold uppercase mt-1">
-                Luxury Curtains
+                Rèm Màn Ngọc Huệ
               </p>
             </div>
             <p className="text-sm leading-relaxed text-warm-white/60 max-w-xs">

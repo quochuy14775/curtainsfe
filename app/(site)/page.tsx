@@ -667,7 +667,7 @@ function Collections() {
                       {cat.title}
                     </h3>
                     {cat.subtitle && (
-                      <p className="text-[#fdfbf8]/60 text-xs md:text-sm leading-relaxed">{cat.subtitle}</p>
+                      <p className="hidden md:block text-[#fdfbf8]/60 text-xs md:text-sm leading-relaxed">{cat.subtitle}</p>
                     )}
                     <div
                       className="mt-3 inline-flex items-center gap-1.5 text-[10px] tracking-widest uppercase opacity-70 group-hover:opacity-100 transition-opacity duration-300"
